@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Lead</title>
+</head>
+<body>
+    <h2>Add New Lead</h2>
+    <form id="leadForm">
+        <label>Name:</label><br>
+        <input type="text" name="name" required><br><br>
+
+        <label>Phone:</label><br>
+        <input type="text" name="phone" required><br><br>
+
+        <label>Email:</label><br>
+        <input type="email" name="email"><br><br>
+
+        <label>Notes:</label><br>
+        <textarea name="notes"></textarea><br><br>
+
+        <button type="submit">Add Lead</button>
+    </form>
+
+    <p id="message"></p>
+
+    <script>
+        document.getElementById('leadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const leadData = Object.fromEntries(formData.entries());
+
+            const res = await fetch('/api/leads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(leadData)
+            });
+
+            const data = await res.json();
+            document.getElementById('message').textContent = data.message || data.error;
+        });
+    </script>
+</body>
+</html>

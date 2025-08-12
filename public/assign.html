@@ -1,0 +1,415 @@
+<!-- public/assign_employees.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Assign Employees to Managers</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#f4f6f8;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#1abc9c;
+      --dark:#2c3e50;
+      --gap:18px;
+      --radius:10px;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:#111827;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .layout{
+      display:flex;
+      min-height:100vh;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      width:220px;
+      background:var(--dark);
+      color:white;
+      padding:24px 16px;
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .brand{
+      font-weight:700;
+      font-size:18px;
+      text-align:center;
+      margin-bottom:8px;
+    }
+    .sidebar p{ font-size:13px; margin:0; color:rgba(255,255,255,0.85) }
+
+    /* Main */
+    .main{
+      flex:1;
+      padding:28px;
+      box-sizing:border-box;
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:20px;
+    }
+    h1{ margin:0; font-size:20px }
+    .subtitle{ color:var(--muted); font-size:13px }
+
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow: 0 6px 18px rgba(14, 30, 37, 0.06);
+      margin-bottom:var(--gap);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    label.select-label{
+      display:block;
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+
+    select, input[type="text"]{
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid #e6e9ee;
+      box-sizing:border-box;
+      font-size:14px;
+      background:transparent;
+    }
+
+    .employees-list{
+      max-height:360px;
+      overflow:auto;
+      border:1px solid #eef2f6;
+      border-radius:8px;
+      padding:12px;
+      background:#fbfdfe;
+    }
+
+    .emp-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px;
+      border-radius:6px;
+      transition:background .12s;
+      margin-bottom:6px;
+    }
+    .emp-row:hover{ background:#f6fbfb; }
+    .emp-checkbox{ width:18px; height:18px; }
+    .emp-meta{ font-size:14px; }
+    .emp-name{ font-weight:600; }
+    .emp-sub{ color:var(--muted); font-size:12px }
+
+    .btn{
+      display:inline-block;
+      padding:10px 14px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px;
+    }
+    .btn-primary{
+      background:var(--accent);
+      color:white;
+      box-shadow: 0 6px 18px rgba(26, 188, 156, 0.12);
+    }
+    .btn-ghost{
+      background:transparent;
+      color:var(--dark);
+      border:1px solid #e6e9ee;
+    }
+
+    .small{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .status{
+      margin-top:12px;
+      font-size:13px;
+    }
+
+    /* Responsive */
+    @media (max-width:900px){
+      .grid{ grid-template-columns: 1fr; }
+      .sidebar{ display:none; }
+      .main{ padding:18px; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Telecalling Admin</div>
+      <p class="small">Assign employees to managers quickly.</p>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:12px 0" />
+      <div class="small">Quick Actions</div>
+      <button class="btn btn-ghost" onclick="location.href='/admin-dashboard.html'">Back to Dashboard</button>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1>Assign Employees to Manager</h1>
+          <div class="subtitle">Choose a manager and assign one or more employees to them</div>
+        </div>
+        <div>
+          <button id="refreshBtn" class="btn btn-ghost" title="Refresh data">Refresh</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="grid">
+          <!-- Left: Manager selection -->
+          <div>
+            <label class="select-label" for="managerSelect">Select Manager</label>
+            <select id="managerSelect">
+              <option value="">Loading managers...</option>
+            </select>
+
+            <div style="margin-top:14px;">
+              <label class="select-label" for="searchEmployees">Search Employees</label>
+              <input type="text" id="searchEmployees" placeholder="Search by name or email">
+            </div>
+
+            <div style="margin-top:12px;">
+              <button id="assignBtn" class="btn btn-primary">Assign Selected</button>
+              <button id="clearBtn" class="btn btn-ghost" style="margin-left:8px">Clear Selection</button>
+            </div>
+
+            <div class="status" id="statusMsg" aria-live="polite"></div>
+          </div>
+
+          <!-- Right: Employees list -->
+          <div>
+            <label class="select-label">Employees (select one or more)</label>
+            <div class="employees-list" id="employeesList">
+              <!-- rows injected here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Current Assignments</h3>
+        <div id="assignmentsContainer" class="small">Loading assignments...</div>
+      </div>
+    </main>
+  </div>
+
+<script>
+  // Utility: get token from localStorage (if login used)
+  function getAuthHeader(){
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': 'Bearer ' + token } : {};
+  }
+
+  // Fetch managers & employees from backend
+  async function loadManagers(){
+    const sel = document.getElementById('managerSelect');
+    sel.innerHTML = '<option value="">Loading managers...</option>';
+
+    try{
+      const res = await fetch('/api/admin/managers', { headers: {...getAuthHeader()} });
+      if (!res.ok) throw new Error('Failed to load managers');
+      const data = await res.json();
+      sel.innerHTML = '<option value="">-- Select Manager --</option>';
+      data.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m._id;
+        opt.textContent = `${m.name} (${m.email || 'no-email'})`;
+        sel.appendChild(opt);
+      });
+    }catch(err){
+      sel.innerHTML = '<option value="">Error loading managers</option>';
+      console.error(err);
+    }
+  }
+
+  let allEmployees = []; // cached array
+  async function loadEmployees(){
+    const container = document.getElementById('employeesList');
+    container.innerHTML = '<div class="small">Loading employees...</div>';
+    try{
+      const res = await fetch('/api/admin/employees', { headers: {...getAuthHeader()} });
+      if (!res.ok) throw new Error('Failed to load employees');
+      const data = await res.json();
+      allEmployees = data;
+      renderEmployees(data);
+    }catch(err){
+      container.innerHTML = '<div class="small">Error loading employees</div>';
+      console.error(err);
+    }
+  }
+
+  function renderEmployees(list){
+    const container = document.getElementById('employeesList');
+    container.innerHTML = '';
+    if (!list.length) { container.innerHTML = '<div class="small">No employees found.</div>'; return; }
+    list.forEach(emp => {
+      const row = document.createElement('div');
+      row.className = 'emp-row';
+      row.innerHTML = `
+        <input class="emp-checkbox" type="checkbox" data-id="${emp._id}">
+        <div class="emp-meta">
+          <div class="emp-name">${escapeHtml(emp.name || 'Unnamed')}</div>
+          <div class="emp-sub">${escapeHtml(emp.email||'no-email')} • Manager: ${emp.manager ? escapeHtml(emp.manager.name || emp.manager) : 'Unassigned'}</div>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  // Render current assignments grouped by manager
+  async function loadAssignments(){
+    const box = document.getElementById('assignmentsContainer');
+    box.innerHTML = 'Loading assignments...';
+    try{
+      // We'll fetch all managers and employees then group client-side for simplicity
+      const [mRes, eRes] = await Promise.all([
+        fetch('/api/admin/managers', { headers: {...getAuthHeader()} }),
+        fetch('/api/admin/employees', { headers: {...getAuthHeader()} })
+      ]);
+      if (!mRes.ok || !eRes.ok) throw new Error('Failed to load data');
+
+      const managers = await mRes.json();
+      const employees = await eRes.json();
+
+      // Map managerId -> manager name
+      const mMap = {};
+      managers.forEach(m => mMap[m._id] = m.name);
+
+      // Group employees by manager
+      const grouped = {};
+      employees.forEach(emp => {
+        const mid = emp.manager ? emp.manager : 'unassigned';
+        if (!grouped[mid]) grouped[mid] = [];
+        grouped[mid].push(emp);
+      });
+
+      // Render
+      let html = '';
+      Object.keys(grouped).forEach(mid => {
+        const mName = mid === 'unassigned' ? 'Unassigned' : (mMap[mid] || 'Unknown Manager');
+        html += `<strong>${escapeHtml(mName)}</strong><br><ul>`;
+        grouped[mid].forEach(emp => {
+          html += `<li>${escapeHtml(emp.name)} — ${escapeHtml(emp.email || 'no-email')}</li>`;
+        });
+        html += '</ul>';
+      });
+      box.innerHTML = html || '<div class="small">No assignments found.</div>';
+    }catch(err){
+      box.innerHTML = '<div class="small">Error loading assignments</div>';
+      console.error(err);
+    }
+  }
+
+  // Assign selected employees to chosen manager
+  async function assignSelected(){
+    const managerId = document.getElementById('managerSelect').value;
+    const checkboxes = Array.from(document.querySelectorAll('.emp-checkbox:checked'));
+    const status = document.getElementById('statusMsg');
+
+    if (!managerId) { status.textContent = 'Please select a manager.'; return; }
+    if (!checkboxes.length) { status.textContent = 'Please select at least one employee.'; return; }
+
+    status.textContent = 'Assigning...';
+    try{
+      const tokenHeader = getAuthHeader();
+      // The server expects { employeeId, managerId } for single assignment.
+      // We'll POST sequentially for each selected employee (could be batch if backend supports it).
+      const results = [];
+      for (const cb of checkboxes){
+        const employeeId = cb.getAttribute('data-id');
+        const res = await fetch('/api/admin/assign-employee', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...tokenHeader },
+          body: JSON.stringify({ employeeId, managerId })
+        });
+        const json = await res.json();
+        results.push({ ok: res.ok, json });
+      }
+
+      const failed = results.filter(r => !r.ok);
+      if (failed.length){
+        status.textContent = `Assigned ${results.length - failed.length} / ${results.length}. ${failed.length} failed. Check console for details.`;
+        console.error('Failed assignments:', failed);
+      } else {
+        status.textContent = `Assigned ${results.length} employees successfully.`;
+      }
+
+      // Refresh lists & assignments
+      await loadEmployees();
+      await loadAssignments();
+    }catch(err){
+      console.error(err);
+      status.textContent = 'Server error during assignment.';
+    }
+  }
+
+  // Clear all selections
+  function clearSelection(){
+    document.querySelectorAll('.emp-checkbox').forEach(cb => cb.checked = false);
+    document.getElementById('statusMsg').textContent = 'Selection cleared.';
+  }
+
+  // Basic client-side search/filter
+  function initSearch(){
+    const input = document.getElementById('searchEmployees');
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      if (!q) return renderEmployees(allEmployees);
+      const filtered = allEmployees.filter(e => 
+        (e.name && e.name.toLowerCase().includes(q)) ||
+        (e.email && e.email.toLowerCase().includes(q))
+      );
+      renderEmployees(filtered);
+    });
+  }
+
+  // Escape HTML to avoid injection
+  function escapeHtml(str){
+    return String(str || '').replace(/[&<>"'`=\/]/g, s => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;',"/":'&#x2F;', "`":'&#x60;','=':'&#x3D;'
+    })[s]);
+  }
+
+  // Wire up buttons
+  document.getElementById('assignBtn').addEventListener('click', assignSelected);
+  document.getElementById('clearBtn').addEventListener('click', clearSelection);
+  document.getElementById('refreshBtn').addEventListener('click', async () => {
+    document.getElementById('statusMsg').textContent = 'Refreshing...';
+    await Promise.all([loadManagers(), loadEmployees(), loadAssignments()]);
+    document.getElementById('statusMsg').textContent = 'Refreshed';
+  });
+
+  // Initial load
+  (async function init(){
+    await Promise.all([loadManagers(), loadEmployees(), loadAssignments()]);
+    initSearch();
+    document.getElementById('statusMsg').textContent = '';
+  })();
+</script>
+</body>
+</html>
