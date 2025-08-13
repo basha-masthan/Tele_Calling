@@ -53,6 +53,21 @@
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
   
+  /* VS Code-like syntax highlighting colors */
+  --syntax-keyword: #569cd6;
+  --syntax-string: #ce9178;
+  --syntax-number: #b5cea8;
+  --syntax-comment: #6a9955;
+  --syntax-function: #dcdcaa;
+  --syntax-variable: #9cdcfe;
+  --syntax-operator: #d4d4d4;
+  --syntax-punctuation: #d4d4d4;
+  --syntax-class: #4ec9b0;
+  --syntax-property: #9cdcfe;
+  --syntax-tag: #569cd6;
+  --syntax-attribute: #9cdcfe;
+  --syntax-value: #ce9178;
+  
   --border: #334155;
   --border-hover: #475569;
 }
@@ -113,7 +128,10 @@ body {
 .logo {
   font-size: 24px;
   font-weight: 700;
-  color: var(--primary);
+  background: linear-gradient(135deg, var(--syntax-keyword), var(--syntax-function));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 8px;
 }
 
@@ -179,7 +197,10 @@ body {
 .page-title {
   font-size: 28px;
   font-weight: 700;
-  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--syntax-keyword), var(--syntax-class));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .theme-toggle {
@@ -579,6 +600,12 @@ tr:hover td {
         </a>
       </div>
       <div class="nav-item">
+        <a href="#" class="nav-link" onclick="showSection('assignments')">
+          <i class="fas fa-user-plus"></i>
+          Assignments
+        </a>
+      </div>
+      <div class="nav-item">
         <a href="#" class="nav-link" onclick="showSection('calls')">
           <i class="fas fa-phone"></i>
           Call Analytics
@@ -615,7 +642,7 @@ tr:hover td {
     <div class="top-bar">
       <h1 class="page-title">Manager Dashboard</h1>
       <div class="theme-toggle">
-        <button class="theme-btn active" onclick="setTheme('light')">Light</button>
+        <button class="theme-btn" onclick="setTheme('light')">Light</button>
         <button class="theme-btn" onclick="setTheme('semi-dark')">Semi-Dark</button>
         <button class="theme-btn" onclick="setTheme('dark')">Dark</button>
         <button class="btn btn-outline" onclick="logout()">
@@ -948,6 +975,91 @@ tr:hover td {
       </div>
     </section>
 
+    <section id="assignments" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-user-plus"></i>
+            Employee Assignment Management
+          </h2>
+          <div class="header-actions">
+            <button class="btn btn-primary" onclick="showBulkAssignmentModal()">
+              <i class="fas fa-users"></i>
+              Bulk Assignment
+            </button>
+          </div>
+        </div>
+        <div class="card-content">
+          <!-- Assignment Statistics -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number" id="totalLeadsForAssignment">0</div>
+              <div class="stat-label">Total Leads</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="assignedLeads">0</div>
+              <div class="stat-label">Assigned Leads</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="unassignedLeads">0</div>
+              <div class="stat-label">Unassigned Leads</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number" id="totalEmployees">0</div>
+              <div class="stat-label">Available Employees</div>
+            </div>
+          </div>
+
+          <!-- Filters -->
+          <div class="filters-section">
+            <div class="filter-group">
+              <label>Status:</label>
+              <select id="assignmentStatusFilter" onchange="filterAssignments()">
+                <option value="">All Status</option>
+                <option value="New">New</option>
+                <option value="Interested">Interested</option>
+                <option value="Hot">Hot</option>
+                <option value="Follow-up">Follow-up</option>
+                <option value="Won">Won</option>
+                <option value="Lost">Lost</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Assignment:</label>
+              <select id="assignmentFilter" onchange="filterAssignments()">
+                <option value="">All</option>
+                <option value="assigned">Assigned</option>
+                <option value="unassigned">Unassigned</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Search:</label>
+              <input type="text" id="assignmentSearchFilter" placeholder="Search leads..." onkeyup="filterAssignments()">
+            </div>
+          </div>
+
+          <!-- Assignments Table -->
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>State</th>
+                  <th>Assigned To</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="assignmentsTableBody">
+                <!-- Assignments will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="analytics" class="section">
       <div class="card">
         <div class="card-header">
@@ -1049,7 +1161,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadAnalyticsData();
     
     initializeCharts();
-    setTheme('light');
+    // Initialize theme from localStorage or default to dark
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
 });
 
 function setTheme(theme) {
@@ -1081,6 +1195,7 @@ function showSection(sectionId) {
         'overview': 'Manager Dashboard',
         'team': 'Team Management',
         'leads': 'Lead Management',
+        'assignments': 'Employee Assignments',
         'calls': 'Call Analytics',
         'sims': 'SIM Management',
         'campaigns': 'Campaign Management',
@@ -1738,6 +1853,97 @@ async function refreshData() {
     await loadSimData();
     await loadCampaignsData();
     await loadAnalyticsData();
+}
+
+// Assignment Management Functions
+async function loadAssignmentsData() {
+    try {
+        const token = localStorage.getItem('token');
+        const [leadsResponse, employeesResponse] = await Promise.all([
+            fetch('/api/manager/leads', { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch('/api/manager/employees', { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+        
+        if (leadsResponse.ok && employeesResponse.ok) {
+            const leads = await leadsResponse.json();
+            const employees = await employeesResponse.json();
+            
+            updateAssignmentStats(leads, employees);
+            renderAssignmentsTable(leads);
+        }
+    } catch (error) {
+        console.error('Error loading assignments data:', error);
+    }
+}
+
+function updateAssignmentStats(leads, employees) {
+    const totalLeads = leads.length;
+    const assignedLeads = leads.filter(lead => lead.assignedTo).length;
+    const unassignedLeads = totalLeads - assignedLeads;
+    const totalEmployees = employees.length;
+    
+    document.getElementById('totalLeadsForAssignment').textContent = totalLeads;
+    document.getElementById('assignedLeads').textContent = assignedLeads;
+    document.getElementById('unassignedLeads').textContent = unassignedLeads;
+    document.getElementById('totalEmployees').textContent = totalEmployees;
+}
+
+function renderAssignmentsTable(leads) {
+    const tbody = document.getElementById('assignmentsTableBody');
+    
+    if (leads.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <div>No leads found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = leads.map(lead => `
+        <tr>
+            <td><strong>${lead.name}</strong></td>
+            <td>${lead.phone}</td>
+            <td><span class="status-badge status-${lead.status.toLowerCase().replace('-', '')}">${lead.status}</span></td>
+            <td>${lead.region}</td>
+            <td>${lead.assignedTo?.name || '<span style="color: var(--danger);">Unassigned</span>'}</td>
+            <td>
+                <div class="action-buttons">
+                    ${lead.assignedTo ? 
+                        `<button class="action-btn reassign" onclick="showAssignmentModal('${lead._id}')" title="Reassign">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>` :
+                        `<button class="action-btn assign" onclick="showAssignmentModal('${lead._id}')" title="Assign">
+                            <i class="fas fa-user-plus"></i>
+                        </button>`
+                    }
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function filterAssignments() {
+    const statusFilter = document.getElementById('assignmentStatusFilter').value;
+    const assignmentFilter = document.getElementById('assignmentFilter').value;
+    const searchFilter = document.getElementById('assignmentSearchFilter').value.toLowerCase();
+    
+    // This would filter the leads based on the criteria
+    // For now, we'll reload the data
+    loadAssignmentsData();
+}
+
+function showAssignmentModal(leadId) {
+    // Implementation for showing assignment modal
+    alert('Assignment modal would open for lead: ' + leadId);
+}
+
+function showBulkAssignmentModal() {
+    // Implementation for showing bulk assignment modal
+    alert('Bulk assignment modal would open');
 }
 </script>
 </body>

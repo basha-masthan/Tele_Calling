@@ -3,23 +3,55 @@
 <head>
     <title>Employee Dashboard</title>
     <style>
+        :root {
+            /* VS Code-like syntax highlighting colors */
+            --syntax-keyword: #569cd6;
+            --syntax-string: #ce9178;
+            --syntax-number: #b5cea8;
+            --syntax-comment: #6a9955;
+            --syntax-function: #dcdcaa;
+            --syntax-variable: #9cdcfe;
+            --syntax-operator: #d4d4d4;
+            --syntax-punctuation: #d4d4d4;
+            --syntax-class: #4ec9b0;
+            --syntax-property: #9cdcfe;
+            --syntax-tag: #569cd6;
+            --syntax-attribute: #9cdcfe;
+            --syntax-value: #ce9178;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            background: #f8f9fa;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e1e1e, #2d2d30);
             margin: 0;
             padding: 0;
+            color: var(--syntax-variable);
         }
         header {
-            background: #343a40;
+            background: linear-gradient(135deg, var(--syntax-keyword), var(--syntax-class));
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        header h1 {
+            background: linear-gradient(135deg, var(--syntax-function), var(--syntax-number));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px auto;
-            background: white;
+            background: #2d2d30;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         th, td {
             padding: 10px;

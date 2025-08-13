@@ -16,7 +16,16 @@ const leadSchema = new mongoose.Schema({
     reassignmentDate: { type: Date }, // Date when lead should be reassigned (for lost leads)
     // New fields for analytics
     sector: { type: String, enum: ['Technology', 'Healthcare', 'Finance', 'Education', 'Retail', 'Manufacturing', 'Real Estate', 'Other'], default: 'Other' },
-    region: { type: String, enum: ['North', 'South', 'East', 'West', 'Central', 'International'], default: 'Central' },
+    region: { type: String, enum: [
+        'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 
+        'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 
+        'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 
+        'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 
+        'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 
+        'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Delhi', 'Jammu and Kashmir', 
+        'Ladakh', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 
+        'Lakshadweep', 'Puducherry', 'Andaman and Nicobar Islands'
+    ], default: 'Maharashtra' },
     previousAssignments: [{ 
         employee: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         assignedAt: { type: Date, default: Date.now },

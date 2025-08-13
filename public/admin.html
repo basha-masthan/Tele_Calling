@@ -27,6 +27,21 @@
   --text-muted: #64748b;
   --text-accent: #6366f1;
   
+  /* VS Code-like syntax highlighting colors */
+  --syntax-keyword: #569cd6;
+  --syntax-string: #ce9178;
+  --syntax-number: #b5cea8;
+  --syntax-comment: #6a9955;
+  --syntax-function: #dcdcaa;
+  --syntax-variable: #9cdcfe;
+  --syntax-operator: #d4d4d4;
+  --syntax-punctuation: #d4d4d4;
+  --syntax-class: #4ec9b0;
+  --syntax-property: #9cdcfe;
+  --syntax-tag: #569cd6;
+  --syntax-attribute: #9cdcfe;
+  --syntax-value: #ce9178;
+  
   --border: #e2e8f0;
   --border-hover: #cbd5e1;
   --border-accent: #6366f1;
@@ -53,6 +68,21 @@
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
   
+  /* VS Code-like syntax highlighting colors for dark theme */
+  --syntax-keyword: #569cd6;
+  --syntax-string: #ce9178;
+  --syntax-number: #b5cea8;
+  --syntax-comment: #6a9955;
+  --syntax-function: #dcdcaa;
+  --syntax-variable: #9cdcfe;
+  --syntax-operator: #d4d4d4;
+  --syntax-punctuation: #d4d4d4;
+  --syntax-class: #4ec9b0;
+  --syntax-property: #9cdcfe;
+  --syntax-tag: #569cd6;
+  --syntax-attribute: #9cdcfe;
+  --syntax-value: #ce9178;
+  
   --border: #334155;
   --border-hover: #475569;
 }
@@ -67,6 +97,21 @@
   --text-primary: #f1f5f9;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
+  
+  /* VS Code-like syntax highlighting colors for semi-dark theme */
+  --syntax-keyword: #569cd6;
+  --syntax-string: #ce9178;
+  --syntax-number: #b5cea8;
+  --syntax-comment: #6a9955;
+  --syntax-function: #dcdcaa;
+  --syntax-variable: #9cdcfe;
+  --syntax-operator: #d4d4d4;
+  --syntax-punctuation: #d4d4d4;
+  --syntax-class: #4ec9b0;
+  --syntax-property: #9cdcfe;
+  --syntax-tag: #569cd6;
+  --syntax-attribute: #9cdcfe;
+  --syntax-value: #ce9178;
   
   --border: #475569;
   --border-hover: #64748b;
@@ -113,7 +158,10 @@ body {
 .logo {
   font-size: 24px;
   font-weight: 700;
-  color: var(--primary);
+  background: linear-gradient(135deg, var(--syntax-keyword), var(--syntax-function));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 8px;
 }
 
@@ -179,7 +227,10 @@ body {
 .page-title {
   font-size: 28px;
   font-weight: 700;
-  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--syntax-keyword), var(--syntax-class));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .theme-toggle {
@@ -239,7 +290,10 @@ body {
 .card-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--syntax-tag), var(--syntax-property));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -309,13 +363,16 @@ body {
 .metric-value {
   font-size: 32px;
   font-weight: 700;
-  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--syntax-number), var(--syntax-function));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 8px;
 }
 
 .metric-label {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--syntax-variable);
   font-weight: 500;
 }
 
@@ -1131,7 +1188,7 @@ tr:hover td {
     <div class="top-bar">
       <h1 class="page-title">Dashboard Overview</h1>
       <div class="theme-toggle">
-        <button class="theme-btn active" onclick="setTheme('light')">Light</button>
+                        <button class="theme-btn" onclick="setTheme('light')">Light</button>
         <button class="theme-btn" onclick="setTheme('semi-dark')">Semi-Dark</button>
         <button class="theme-btn" onclick="setTheme('dark')">Dark</button>
         <button class="btn btn-outline" onclick="logout()">
@@ -1301,15 +1358,45 @@ tr:hover td {
               </select>
             </div>
             <div class="filter-group">
-              <label>Region:</label>
+              <label>State:</label>
               <select id="regionFilter" onchange="filterLeads()">
-                <option value="">All Regions</option>
-                <option value="North">North</option>
-                <option value="South">South</option>
-                <option value="East">East</option>
-                <option value="West">West</option>
-                <option value="Central">Central</option>
-                <option value="International">International</option>
+                <option value="">All States</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                <option value="Assam">Assam</option>
+                <option value="Bihar">Bihar</option>
+                <option value="Chhattisgarh">Chhattisgarh</option>
+                <option value="Goa">Goa</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Haryana">Haryana</option>
+                <option value="Himachal Pradesh">Himachal Pradesh</option>
+                <option value="Jharkhand">Jharkhand</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Kerala">Kerala</option>
+                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Manipur">Manipur</option>
+                <option value="Meghalaya">Meghalaya</option>
+                <option value="Mizoram">Mizoram</option>
+                <option value="Nagaland">Nagaland</option>
+                <option value="Odisha">Odisha</option>
+                <option value="Punjab">Punjab</option>
+                <option value="Rajasthan">Rajasthan</option>
+                <option value="Sikkim">Sikkim</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Telangana">Telangana</option>
+                <option value="Tripura">Tripura</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                <option value="Uttarakhand">Uttarakhand</option>
+                <option value="West Bengal">West Bengal</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                <option value="Ladakh">Ladakh</option>
+                <option value="Chandigarh">Chandigarh</option>
+                <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                <option value="Lakshadweep">Lakshadweep</option>
+                <option value="Puducherry">Puducherry</option>
+                <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
               </select>
             </div>
             <div class="filter-group">
@@ -1328,7 +1415,7 @@ tr:hover td {
                   <th>Email</th>
                   <th>Status</th>
                   <th>Sector</th>
-                  <th>Region</th>
+                  <th>State</th>
                   <th>Assigned To</th>
                   <th>Created By</th>
                   <th>Created Date</th>
@@ -1405,14 +1492,44 @@ tr:hover td {
             
             <div class="form-row">
               <div class="form-group">
-                <label for="leadRegion">Region</label>
+                <label for="leadRegion">State</label>
                 <select id="leadRegion" name="region">
-                  <option value="North">North</option>
-                  <option value="South">South</option>
-                  <option value="East">East</option>
-                  <option value="West">West</option>
-                  <option value="Central">Central</option>
-                  <option value="International">International</option>
+                  <option value="Andhra Pradesh">Andhra Pradesh</option>
+                  <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                  <option value="Assam">Assam</option>
+                  <option value="Bihar">Bihar</option>
+                  <option value="Chhattisgarh">Chhattisgarh</option>
+                  <option value="Goa">Goa</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Haryana">Haryana</option>
+                  <option value="Himachal Pradesh">Himachal Pradesh</option>
+                  <option value="Jharkhand">Jharkhand</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Kerala">Kerala</option>
+                  <option value="Madhya Pradesh">Madhya Pradesh</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Manipur">Manipur</option>
+                  <option value="Meghalaya">Meghalaya</option>
+                  <option value="Mizoram">Mizoram</option>
+                  <option value="Nagaland">Nagaland</option>
+                  <option value="Odisha">Odisha</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Rajasthan">Rajasthan</option>
+                  <option value="Sikkim">Sikkim</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="Telangana">Telangana</option>
+                  <option value="Tripura">Tripura</option>
+                  <option value="Uttar Pradesh">Uttar Pradesh</option>
+                  <option value="Uttarakhand">Uttarakhand</option>
+                  <option value="West Bengal">West Bengal</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                  <option value="Ladakh">Ladakh</option>
+                  <option value="Chandigarh">Chandigarh</option>
+                  <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                  <option value="Lakshadweep">Lakshadweep</option>
+                  <option value="Puducherry">Puducherry</option>
+                  <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
                 </select>
               </div>
               
@@ -1740,17 +1857,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadPipelines();
     
     initializeCharts();
-    setTheme('light');
+    // Initialize theme from localStorage or default to dark
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
 });
 
 function setTheme(theme) {
     currentTheme = theme;
     document.documentElement.setAttribute('data-theme', theme);
     
+    // Update active state of theme buttons
     document.querySelectorAll('.theme-btn').forEach(btn => {
         btn.classList.remove('active');
+        if (btn.textContent.toLowerCase().includes(theme.replace('-', ' '))) {
+            btn.classList.add('active');
+        }
     });
-    event.target.classList.add('active');
     
     localStorage.setItem('theme', theme);
 }
