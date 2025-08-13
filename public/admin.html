@@ -2,42 +2,90 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeleCRM Admin Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <style>
 :root {
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
   --secondary: #64748b;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
+  --info: #06b6d4;
+  
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
   --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-sidebar: #1e293b;
+  
   --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-accent: #6366f1;
+  
   --border: #e2e8f0;
   --border-hover: #cbd5e1;
+  --border-accent: #6366f1;
+  
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --radius: 8px;
-  --radius-lg: 12px;
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  --radius: 12px;
+  --radius-lg: 16px;
+  
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: #1e293b;
+  --bg-sidebar: #020617;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  
+  --border: #334155;
+  --border-hover: #475569;
+}
+
+[data-theme="semi-dark"] {
+  --bg-primary: #1e293b;
+  --bg-secondary: #334155;
+  --bg-tertiary: #475569;
+  --bg-card: #334155;
+  --bg-sidebar: #0f172a;
+  
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  
+  --border: #475569;
+  --border-hover: #64748b;
 }
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   color: var(--text-primary);
+  font-family: var(--font-family);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  transition: all 0.3s ease;
 }
 
 .dashboard {
@@ -45,39 +93,39 @@ body {
   min-height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
-  width: 260px;
-  background: var(--bg-primary);
+  width: 280px;
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--border);
-  padding: 24px 0;
-  display: flex;
-  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 1000;
+  transition: all 0.3s ease;
 }
 
 .sidebar-header {
-  padding: 0 24px 24px;
+  padding: 24px;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 24px;
+  text-align: center;
 }
 
-.sidebar-title {
-  font-size: 20px;
+.logo {
+  font-size: 24px;
   font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
+  color: var(--primary);
+  margin-bottom: 8px;
 }
 
-.sidebar-subtitle {
+.logo-subtitle {
   font-size: 12px;
   color: var(--text-muted);
-  margin: 4px 0 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .nav-menu {
-  list-style: none;
-  padding: 0 12px;
-  margin: 0;
+  padding: 24px 0;
 }
 
 .nav-item {
@@ -85,27 +133,78 @@ body {
 }
 
 .nav-link {
-  display: block;
-  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
   color: var(--text-secondary);
   text-decoration: none;
-  border-radius: var(--radius);
-  transition: all 0.2s ease;
-  cursor: pointer;
   font-weight: 500;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
 }
 
 .nav-link:hover,
 .nav-link.active {
-  background: var(--bg-tertiary);
+  background: rgba(99, 102, 241, 0.1);
   color: var(--primary);
+  border-left-color: var(--primary);
 }
 
-/* Main Content */
+.nav-link i {
+  width: 20px;
+  text-align: center;
+}
+
 .main-content {
   flex: 1;
-  padding: 32px;
-  overflow-y: auto;
+  margin-left: 280px;
+  padding: 24px;
+  background: var(--bg-secondary);
+  min-height: 100vh;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.theme-btn:hover,
+.theme-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
 
 .section {
@@ -116,293 +215,748 @@ body {
   display: block;
 }
 
-.page-header {
-  margin-bottom: 32px;
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 8px;
-}
-
-.page-subtitle {
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* Cards */
 .card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
+  background: var(--bg-card);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 24px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
   overflow: hidden;
+  transition: all 0.3s ease;
+  margin-bottom: 24px;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-2px);
 }
 
 .card-header {
-  padding: 20px 24px;
+  padding: 24px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
 }
 
 .card-title {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .card-content {
   padding: 24px;
 }
 
-/* Tables */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.metric-card {
+  background: var(--bg-card);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--info));
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.metric-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+}
+
+.metric-icon.primary { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); }
+.metric-icon.success { background: linear-gradient(135deg, var(--success), #059669); }
+.metric-icon.warning { background: linear-gradient(135deg, var(--warning), #d97706); }
+.metric-icon.danger { background: linear-gradient(135deg, var(--danger), #dc2626); }
+.metric-icon.info { background: linear-gradient(135deg, var(--info), #0891b2); }
+
+.metric-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.metric-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.metric-change {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+  display: inline-block;
+  margin-top: 8px;
+}
+
+.metric-change.positive {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.metric-change.negative {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.chart-grid.small {
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+.chart-grid.large {
+  grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+}
+
+.import-export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.import-export-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.import-export-card h3 {
+  margin-bottom: 20px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.import-export-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.action-group {
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.action-group h4 {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.action-group p {
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.action-group .btn {
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.import-results {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.import-results h3 {
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.pipelines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.pipeline-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.pipeline-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.pipeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.pipeline-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pipeline-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.pipeline-status.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+}
+
+.pipeline-status.inactive {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+.pipeline-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pipeline-metric {
+  text-align: center;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+}
+
+.pipeline-metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.pipeline-metric-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pipeline-stages {
+  margin-bottom: 16px;
+}
+
+.pipeline-stages h4 {
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.stage-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stage-tag {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.pipeline-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pipeline-actions .btn {
+  flex: 1;
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Filters Section */
+.filters-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-group select,
+.filter-group input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+/* Data Table */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-primary);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+  background: var(--bg-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.data-table tbody tr:hover {
+  background: var(--bg-tertiary);
+}
+
+.data-table td {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-new { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+.status-interested { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.status-hot { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.status-follow-up { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.status-won { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.status-lost { background: rgba(100, 116, 139, 0.1); color: #64748b; }
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn.edit {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.action-btn.edit:hover {
+  background: #6366f1;
+  color: white;
+}
+
+.action-btn.delete {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.action-btn.delete:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.action-btn.view {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.action-btn.view:hover {
+  background: #10b981;
+  color: white;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--bg-primary);
+  margin: 5% auto;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 600px;
+  box-shadow: var(--shadow-xl);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 0 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.close {
+  color: var(--text-muted);
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.close:hover {
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px 24px 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.pagination button.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .filters-section {
+    flex-direction: column;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-content {
+    width: 95%;
+    margin: 10% auto;
+  }
+  
+  .data-table {
+    font-size: 12px;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 8px 12px;
+  }
+}
+
+.chart-container {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.chart-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.chart-wrapper {
+  height: 300px;
+  position: relative;
+}
+
 .table-container {
-  overflow-x: auto;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  overflow: hidden;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--bg-primary);
 }
 
 th {
-  background: var(--bg-secondary);
-  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  padding: 16px 20px;
   text-align: left;
   font-weight: 600;
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
 }
 
 td {
-  padding: 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
 tr:hover {
   background: var(--bg-tertiary);
 }
 
-tr.clickable {
-  cursor: pointer;
-  position: relative;
-}
-
-tr.clickable::after {
-  content: '▶';
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  font-size: 12px;
-  transition: transform 0.2s ease;
-}
-
-tr.clickable.expanded::after {
-  transform: translateY(-50%) rotate(90deg);
-}
-
-/* Accordion Employee Rows */
-.employee-accordion {
-  background: var(--bg-secondary);
-  display: none;
-}
-
-.employee-accordion.show {
-  display: table-row;
-}
-
-.employee-accordion td {
-  padding: 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.employee-accordion-content {
-  padding: 20px;
-  background: var(--bg-secondary);
-}
-
-.employee-accordion-title {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-  font-size: 14px;
-}
-
-.employee-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
-}
-
-.employee-card {
-  background: var(--bg-primary);
-  padding: 12px 16px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  transition: all 0.2s ease;
-}
-
-.employee-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: var(--shadow-sm);
-}
-
-.employee-card-name {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.employee-card-email {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.no-employees {
-  text-align: center;
-  padding: 20px;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* Forms */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: start;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 14px;
-  transition: border-color 0.2s ease;
-  background: var(--bg-primary);
+tr:hover td {
   color: var(--text-primary);
 }
 
-.form-input:focus,
-.form-select:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
-}
-
-/* Employee List */
-.employees-container {
-  max-height: 400px;
-  overflow-y: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-primary);
-}
-
-.employee-item {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-  transition: background-color 0.2s ease;
-}
-
-.employee-item:last-child {
-  border-bottom: none;
-}
-
-.employee-item:hover {
-  background: var(--bg-secondary);
-}
-
-.employee-checkbox {
-  margin-right: 12px;
-  width: 16px;
-  height: 16px;
-}
-
-.employee-info {
-  flex: 1;
-}
-
-.employee-name {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.employee-details {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  border: 1px solid transparent;
+  padding: 12px 20px;
+  border: none;
   border-radius: var(--radius);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   text-decoration: none;
-  background: transparent;
 }
 
 .btn-primary {
   background: var(--primary);
   color: white;
-  border-color: var(--primary);
 }
 
 .btn-primary:hover {
   background: var(--primary-hover);
-  border-color: var(--primary-hover);
-}
-
-.btn-secondary {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border-color: var(--border);
-}
-
-.btn-secondary:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-outline {
   background: transparent;
   color: var(--primary);
-  border-color: var(--primary);
+  border: 1px solid var(--primary);
 }
 
 .btn-outline:hover {
@@ -410,87 +964,24 @@ tr.clickable.expanded::after {
   color: white;
 }
 
-.btn-group {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 12px;
 }
 
-/* Status Messages */
-.status-message {
-  padding: 12px 16px;
-  border-radius: var(--radius);
-  font-size: 14px;
-  margin-top: 16px;
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.status-success {
-  background: rgb(16 185 129 / 0.1);
-  color: var(--success);
-  border: 1px solid rgb(16 185 129 / 0.2);
-}
+.status-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.status-inactive { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+.status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
 
-.status-error {
-  background: rgb(239 68 68 / 0.1);
-  color: var(--danger);
-  border: 1px solid rgb(239 68 68 / 0.2);
-}
-
-.status-info {
-  background: rgb(37 99 235 / 0.1);
-  color: var(--primary);
-  border: 1px solid rgb(37 99 235 / 0.2);
-}
-
-/* Assignments Display */
-.assignments-list {
-  margin-top: 20px;
-}
-
-.manager-group {
-  margin-bottom: 24px;
-}
-
-.manager-group-title {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
-}
-
-.employee-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.employee-list li {
-  padding: 8px 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
-  
-  .main-content {
-    padding: 20px;
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .page-title {
-    font-size: 24px;
-  }
-}
-
-/* Loading States */
 .loading {
   display: flex;
   align-items: center;
@@ -499,767 +990,2123 @@ tr.clickable.expanded::after {
   color: var(--text-muted);
 }
 
-.empty-state {
-  text-align: center;
-  padding: 40px;
-  color: var(--text-muted);
+.loading::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 12px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 16px;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .top-bar {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
 }
 </style>
 </head>
 <body>
-
 <div class="dashboard">
-  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1 class="sidebar-title">Admin Panel</h1>
-      <p class="sidebar-subtitle">Employee Management System</p>
+      <div class="logo">TeleCRM</div>
+      <div class="logo-subtitle">Admin Panel</div>
     </div>
     
-    <nav>
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="#" class="nav-link active" onclick="showSection('managers')">Managers</a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link" onclick="showSection('employees')">Employees</a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link" onclick="showSection('leads')">Leads</a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link" onclick="showSection('assign')">Assign Employees</a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link" onclick="showSection('lead-assign')">Lead Employees</a>
-        </li>
-      </ul>
+    <nav class="nav-menu">
+      <div class="nav-item">
+        <a href="#" class="nav-link active" onclick="showSection('overview')">
+          <i class="fas fa-chart-line"></i>
+          Overview
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="nav-link" onclick="showSection('users')">
+          <i class="fas fa-users"></i>
+          User Management
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="nav-link" onclick="showSection('leads')">
+          <i class="fas fa-bullseye"></i>
+          Lead Management
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="nav-link" onclick="showSection('campaigns')">
+          <i class="fas fa-rocket"></i>
+          Campaigns
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="nav-link" onclick="showSection('sims')">
+          <i class="fas fa-sim-card"></i>
+          SIM Management
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="nav-link" onclick="showSection('analytics')">
+          <i class="fas fa-chart-bar"></i>
+          Analytics
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="nav-link" onclick="showSection('import-export')">
+          <i class="fas fa-file-import"></i>
+          Import/Export
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="nav-link" onclick="showSection('sales-pipelines')">
+          <i class="fas fa-project-diagram"></i>
+          Sales Pipelines
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="nav-link" onclick="showSection('settings')">
+          <i class="fas fa-cog"></i>
+          Settings
+        </a>
+      </div>
     </nav>
   </aside>
 
-  <!-- Main Content -->
   <main class="main-content">
-    <!-- Managers Section -->
-    <section id="managers" class="section active">
-      <div class="page-header">
-        <h1 class="page-title">Managers</h1>
-        <p class="page-subtitle">View and manage all managers in the system</p>
+    <div class="top-bar">
+      <h1 class="page-title">Dashboard Overview</h1>
+      <div class="theme-toggle">
+        <button class="theme-btn active" onclick="setTheme('light')">Light</button>
+        <button class="theme-btn" onclick="setTheme('semi-dark')">Semi-Dark</button>
+        <button class="theme-btn" onclick="setTheme('dark')">Dark</button>
+        <button class="btn btn-outline" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <section id="overview" class="section active">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon primary">
+              <i class="fas fa-users"></i>
+            </div>
+          </div>
+          <div class="metric-value" id="totalUsers">-</div>
+          <div class="metric-label">Total Users</div>
+          <div class="metric-change positive">+12% from last month</div>
+        </div>
+        
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon success">
+              <i class="fas fa-bullseye"></i>
+            </div>
+          </div>
+          <div class="metric-value" id="totalLeads">-</div>
+          <div class="metric-label">Total Leads</div>
+          <div class="metric-change positive">+8% from last month</div>
+        </div>
+        
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon warning">
+              <i class="fas fa-phone"></i>
+            </div>
+          </div>
+          <div class="metric-value" id="totalCalls">-</div>
+          <div class="metric-label">Total Calls</div>
+          <div class="metric-change positive">+15% from last month</div>
+        </div>
+        
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon info">
+              <i class="fas fa-sim-card"></i>
+            </div>
+          </div>
+          <div class="metric-value" id="activeSims">-</div>
+          <div class="metric-label">Active SIMs</div>
+          <div class="metric-change positive">+5% from last month</div>
+        </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">All Managers</h2>
+      <div class="chart-grid">
+        <div class="chart-container">
+          <h3 class="chart-title">Lead Status Distribution</h3>
+          <div class="chart-wrapper">
+            <canvas id="leadStatusChart"></canvas>
+          </div>
         </div>
-        <div class="card-content">
-          <div class="table-container">
-            <table id="managersTable">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Created At</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+        
+        <div class="chart-container">
+          <h3 class="chart-title">Call Analytics</h3>
+          <div class="chart-wrapper">
+            <canvas id="callAnalyticsChart"></canvas>
           </div>
         </div>
       </div>
 
-
+      <div class="chart-grid">
+        <div class="chart-container">
+          <h3 class="chart-title">Sales Performance</h3>
+          <div class="chart-wrapper">
+            <canvas id="salesChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="chart-container">
+          <h3 class="chart-title">Team Performance</h3>
+          <div class="chart-wrapper">
+            <canvas id="teamPerformanceChart"></canvas>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Employees Section -->
-    <section id="employees" class="section">
-      <div class="page-header">
-        <h1 class="page-title">Employees</h1>
-        <p class="page-subtitle">View all employees and their assigned managers</p>
-      </div>
-
+    <section id="users" class="section">
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">All Employees</h2>
+          <h2 class="card-title">
+            <i class="fas fa-users"></i>
+            User Management
+          </h2>
         </div>
         <div class="card-content">
           <div class="table-container">
-            <table id="employeesTable">
+            <table id="usersTable">
               <thead>
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
-                  <th>Manager</th>
-                  <th>Created At</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-              <tbody></tbody>
+              <tbody>
+                <tr>
+                  <td colspan="6" class="loading">Loading users...</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Leads Section -->
     <section id="leads" class="section">
-      <div class="page-header">
-        <h1 class="page-title">Leads</h1>
-        <p class="page-subtitle">Manage all leads and prospects</p>
-      </div>
-
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">All Leads</h2>
+          <h2 class="card-title">
+            <i class="fas fa-bullseye"></i>
+            Lead Management
+          </h2>
+          <div class="header-actions">
+            <button class="btn btn-outline" onclick="exportLeads()">
+              <i class="fas fa-download"></i>
+              Export
+            </button>
+            <button class="btn btn-primary" onclick="showAddLeadModal()">
+              <i class="fas fa-plus"></i>
+              Add Lead
+            </button>
+          </div>
         </div>
         <div class="card-content">
+          <!-- Filters -->
+          <div class="filters-section">
+            <div class="filter-group">
+              <label>Status:</label>
+              <select id="statusFilter" onchange="filterLeads()">
+                <option value="">All Status</option>
+                <option value="New">New</option>
+                <option value="Interested">Interested</option>
+                <option value="Hot">Hot</option>
+                <option value="Follow-up">Follow-up</option>
+                <option value="Won">Won</option>
+                <option value="Lost">Lost</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Sector:</label>
+              <select id="sectorFilter" onchange="filterLeads()">
+                <option value="">All Sectors</option>
+                <option value="Technology">Technology</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Finance">Finance</option>
+                <option value="Education">Education</option>
+                <option value="Retail">Retail</option>
+                <option value="Manufacturing">Manufacturing</option>
+                <option value="Real Estate">Real Estate</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Region:</label>
+              <select id="regionFilter" onchange="filterLeads()">
+                <option value="">All Regions</option>
+                <option value="North">North</option>
+                <option value="South">South</option>
+                <option value="East">East</option>
+                <option value="West">West</option>
+                <option value="Central">Central</option>
+                <option value="International">International</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Search:</label>
+              <input type="text" id="searchFilter" placeholder="Search leads..." onkeyup="filterLeads()">
+            </div>
+          </div>
+
+          <!-- Leads Table -->
           <div class="table-container">
-            <table id="leadsTable">
-              <thead id="leadsHead"></thead>
-              <tbody></tbody>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Sector</th>
+                  <th>Region</th>
+                  <th>Assigned To</th>
+                  <th>Created By</th>
+                  <th>Created Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="leadsTableBody">
+                <!-- Leads will be loaded here -->
+              </tbody>
             </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination" id="leadsPagination">
+            <!-- Pagination will be generated here -->
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Assign Section -->
-    <section id="assign" class="section">
-      <div class="page-header">
-        <h1 class="page-title">Assign Employees</h1>
-        <p class="page-subtitle">Choose a manager and assign one or more employees to them</p>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Assignment Tool</h2>
+    <!-- Add/Edit Lead Modal -->
+    <div id="leadModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="leadModalTitle">Add New Lead</h3>
+          <span class="close" onclick="closeLeadModal()">&times;</span>
         </div>
-        <div class="card-content">
-          <div class="form-grid">
-            <!-- Left: Manager selection and controls -->
-            <div>
+        <div class="modal-body">
+          <form id="leadForm">
+            <input type="hidden" id="leadId" name="leadId">
+            
+            <div class="form-group">
+              <label for="leadName">Name *</label>
+              <input type="text" id="leadName" name="name" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="leadPhone">Phone *</label>
+              <input type="text" id="leadPhone" name="phone" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="leadEmail">Email</label>
+              <input type="email" id="leadEmail" name="email">
+            </div>
+            
+            <div class="form-row">
               <div class="form-group">
-                <label class="form-label" for="managerSelect">Select Manager</label>
-                <select id="managerSelect" class="form-select">
-                  <option value="">Loading managers...</option>
+                <label for="leadStatus">Status</label>
+                <select id="leadStatus" name="status">
+                  <option value="New">New</option>
+                  <option value="Interested">Interested</option>
+                  <option value="Hot">Hot</option>
+                  <option value="Follow-up">Follow-up</option>
+                  <option value="Won">Won</option>
+                  <option value="Lost">Lost</option>
                 </select>
               </div>
-
+              
               <div class="form-group">
-                <label class="form-label" for="searchEmployees">Search Employees</label>
-                <input type="text" id="searchEmployees" class="form-input" placeholder="Search by name or email">
-              </div>
-
-              <div class="btn-group">
-                <button id="assignBtn" class="btn btn-primary">Assign Selected</button>
-                <button id="clearBtn" class="btn btn-secondary">Clear Selection</button>
-                <button id="refreshBtn" class="btn btn-outline">Refresh</button>
-              </div>
-
-              <div id="statusMsg" class="status-message" style="display: none;" aria-live="polite"></div>
-            </div>
-
-            <!-- Right: Employees list -->
-            <div>
-              <label class="form-label">Available Employees</label>
-              <div class="employees-container" id="employeesList">
-                <div class="loading">Loading employees...</div>
+                <label for="leadSector">Sector</label>
+                <select id="leadSector" name="sector">
+                  <option value="Technology">Technology</option>
+                  <option value="Healthcare">Healthcare</option>
+                  <option value="Finance">Finance</option>
+                  <option value="Education">Education</option>
+                  <option value="Retail">Retail</option>
+                  <option value="Manufacturing">Manufacturing</option>
+                  <option value="Real Estate">Real Estate</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
             </div>
-          </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="leadRegion">Region</label>
+                <select id="leadRegion" name="region">
+                  <option value="North">North</option>
+                  <option value="South">South</option>
+                  <option value="East">East</option>
+                  <option value="West">West</option>
+                  <option value="Central">Central</option>
+                  <option value="International">International</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="leadAssignedTo">Assign To</label>
+                <select id="leadAssignedTo" name="assignedTo">
+                  <option value="">Unassigned</option>
+                  <!-- Employees will be loaded here -->
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="leadNotes">Notes</label>
+              <textarea id="leadNotes" name="notes" rows="3"></textarea>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="leadFollowUpDate">Follow-up Date</label>
+                <input type="date" id="leadFollowUpDate" name="followUpDate">
+              </div>
+              
+              <div class="form-group">
+                <label for="leadSellingPrice">Selling Price</label>
+                <input type="number" id="leadSellingPrice" name="sellingPrice" min="0" step="0.01">
+              </div>
+            </div>
+            
+            <div class="form-group" id="lossReasonGroup" style="display: none;">
+              <label for="leadLossReason">Loss Reason</label>
+              <textarea id="leadLossReason" name="lossReason" rows="2"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="closeLeadModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveLead()">Save Lead</button>
         </div>
       </div>
+    </div>
 
+    <section id="campaigns" class="section">
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">Current Assignments</h2>
+          <h2 class="card-title">
+            <i class="fas fa-rocket"></i>
+            Campaign Management
+          </h2>
         </div>
         <div class="card-content">
-          <div id="assignmentsContainer" class="loading">Loading assignments...</div>
+          <div class="table-container">
+            <table id="campaignsTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Performance</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="7" class="loading">Loading campaigns...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
 
-            <!-- Lead Assign Section -->
-<section id="lead-assign" class="section">
-  <div class="page-header">
-    <h1 class="page-title">Assign Leads</h1>
-    <p class="page-subtitle">Choose a user (employee) and assign one or more leads to them</p>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">Lead Assignment Tool</h2>
-    </div>
-    <div class="card-content">
-      <div class="form-grid">
-        <!-- Left: User selection and controls -->
-        <div>
-          <div class="form-group">
-            <label class="form-label" for="userSelect">Select User</label>
-            <select id="userSelect" class="form-select">
-              <option value="">Loading users...</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="searchLeads">Search Leads</label>
-            <input type="text" id="searchLeads" class="form-input" placeholder="Search by name or email">
-          </div>
-
-          <div class="btn-group">
-            <button id="leadAssignBtn" class="btn btn-primary">Assign Selected</button>
-            <button id="leadClearBtn" class="btn btn-secondary">Clear Selection</button>
-            <button id="leadRefreshBtn" class="btn btn-outline">Refresh</button>
-          </div>
-
-          <div id="leadStatusMsg" class="status-message" style="display: none;" aria-live="polite"></div>
+    <section id="sims" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-sim-card"></i>
+            SIM Card Management
+          </h2>
         </div>
-
-        <!-- Right: Leads list -->
-        <div>
-          <label class="form-label">Available Leads</label>
-          <div class="employees-container" id="leadsList">
-            <div class="loading">Loading leads...</div>
+        <div class="card-content">
+          <div class="table-container">
+            <table id="simsTable">
+              <thead>
+                <tr>
+                  <th>SIM Number</th>
+                  <th>Carrier</th>
+                  <th>Status</th>
+                  <th>Balance</th>
+                  <th>Assigned To</th>
+                  <th>Health</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="7" class="loading">Loading SIM cards...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- Current Assignments -->
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">Current Lead Assignments</h2>
-    </div>
-    <div class="card-content">
-      <div id="leadAssignmentsContainer" class="loading">Loading assignments...</div>
-    </div>
-  </div>  
-</section>
-
-<!-- Script for Lead Assignment -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const userSelect = document.getElementById("userSelect");
-  const leadsList = document.getElementById("leadsList");
-  const assignmentsContainer = document.getElementById("leadAssignmentsContainer");
-  const searchLeads = document.getElementById("searchLeads");
-  const statusMsg = document.getElementById("leadStatusMsg");
-
-  async function fetchUsers() {
-    try {
-      const res = await fetch("/api/leads/users");
-      const users = await res.json();
-      userSelect.innerHTML = `<option value="">-- Select User --</option>`;
-      users.forEach(user => {
-        userSelect.innerHTML += `<option value="${user._id}">${user.name} (${user.email})</option>`;
-      });
-    } catch (err) {
-      console.error("Error fetching users", err);
-    }
-  }
-
-  async function fetchLeads() {
-    try {
-      const res = await fetch("/api/leads/unassigned");
-      const leads = await res.json();
-      renderLeads(leads);
-    } catch (err) {
-      console.error("Error fetching leads", err);
-    }
-  }
-
-  function renderLeads(leads) {
-    leadsList.innerHTML = "";
-    if (!leads.length) {
-      leadsList.innerHTML = "<p>No unassigned leads bhai.</p>";
-      return;
-    }
-    leads.forEach(lead => {
-      leadsList.innerHTML += `
-        <label class="checkbox-item">
-          <input type="checkbox" value="${lead._id}" />
-          <span>${lead.name} - ${lead.email || 'No email'} - ${lead.phone}</span>
-        </label>
-      `;
-    });
-  }
-
-  async function fetchAssignments() {
-    try {
-      const res = await fetch("/api/leads/assignments");
-      const assignments = await res.json();
-      assignmentsContainer.innerHTML = "";
-      if (!assignments.length) {
-        assignmentsContainer.innerHTML = "<p>No assigned leads found.</p>";
-        return;
-      }
-      assignments.forEach(lead => {
-        assignmentsContainer.innerHTML += `
-          <div class="assignment-item">
-            <strong>${lead.name}</strong> - ${lead.email || 'No email'} - Assigned to: ${lead.assignedTo?.name || 'N/A'}
+    <section id="analytics" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-chart-bar"></i>
+            Advanced Analytics
+          </h2>
+          <button class="btn btn-primary" onclick="refreshAnalytics()">
+            <i class="fas fa-sync-alt"></i>
+            Refresh Analytics
+          </button>
+        </div>
+        <div class="card-content">
+          <div class="chart-grid">
+            <div class="chart-container">
+              <h3 class="chart-title">Leads by Sector</h3>
+              <div class="chart-wrapper">
+                <canvas id="leadsBySectorChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="chart-container">
+              <h3 class="chart-title">Leads by Region</h3>
+              <div class="chart-wrapper">
+                <canvas id="leadsByRegionChart"></canvas>
+              </div>
+            </div>
           </div>
-        `;
-      });
-    } catch (err) {
-      console.error("Error fetching assignments", err);
-    }
-  }
+          
+          <div class="chart-grid small">
+            <div class="chart-container">
+              <h3 class="chart-title">Hot Leads by Sector</h3>
+              <div class="chart-wrapper">
+                <canvas id="hotLeadsBySectorChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="chart-container">
+              <h3 class="chart-title">Interested Leads by Sector</h3>
+              <div class="chart-wrapper">
+                <canvas id="interestedLeadsBySectorChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="chart-container">
+              <h3 class="chart-title">Hot Leads by Region</h3>
+              <div class="chart-wrapper">
+                <canvas id="hotLeadsByRegionChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="chart-container">
+              <h3 class="chart-title">Interested Leads by Region</h3>
+              <div class="chart-wrapper">
+                <canvas id="interestedLeadsByRegionChart"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <div class="chart-grid large">
+            <div class="chart-container">
+              <h3 class="chart-title">Monthly Lead Trend</h3>
+              <div class="chart-wrapper">
+                <canvas id="monthlyLeadTrendChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="chart-container">
+              <h3 class="chart-title">Sector-Region Matrix (Hot & Interested)</h3>
+              <div class="chart-wrapper">
+                <canvas id="sectorRegionMatrixChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  document.getElementById("leadAssignBtn").addEventListener("click", async () => {
-    const selectedUser = userSelect.value;
-    const selectedLeads = [...leadsList.querySelectorAll("input[type=checkbox]:checked")].map(cb => cb.value);
+    <section id="import-export" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-file-import"></i>
+            Import/Export Management
+          </h2>
+        </div>
+        <div class="card-content">
+          <div class="import-export-grid">
+            <!-- Leads Import/Export -->
+            <div class="import-export-card">
+              <h3 class="card-subtitle">
+                <i class="fas fa-bullseye"></i>
+                Leads Management
+              </h3>
+              <div class="import-export-actions">
+                <div class="action-group">
+                  <h4>Export Leads</h4>
+                  <p>Download all leads as CSV file</p>
+                  <button class="btn btn-primary" onclick="exportLeads()">
+                    <i class="fas fa-download"></i>
+                    Export Leads
+                  </button>
+                </div>
+                
+                <div class="action-group">
+                  <h4>Import Leads</h4>
+                  <p>Upload CSV file to import leads</p>
+                  <input type="file" id="leadsFile" accept=".csv" style="display: none;" onchange="importLeads()">
+                  <button class="btn btn-outline" onclick="document.getElementById('leadsFile').click()">
+                    <i class="fas fa-upload"></i>
+                    Choose File
+                  </button>
+                  <button class="btn btn-primary" onclick="downloadLeadsTemplate()">
+                    <i class="fas fa-file-download"></i>
+                    Download Template
+                  </button>
+                </div>
+              </div>
+            </div>
 
-    if (!selectedUser || selectedLeads.length === 0) {
-      alert("Please select a user and at least one lead.");
-      return;
-    }
+            <!-- Campaigns Import/Export -->
+            <div class="import-export-card">
+              <h3 class="card-subtitle">
+                <i class="fas fa-rocket"></i>
+                Campaigns Management
+              </h3>
+              <div class="import-export-actions">
+                <div class="action-group">
+                  <h4>Export Campaigns</h4>
+                  <p>Download all campaigns as CSV file</p>
+                  <button class="btn btn-primary" onclick="exportCampaigns()">
+                    <i class="fas fa-download"></i>
+                    Export Campaigns
+                  </button>
+                </div>
+                
+                <div class="action-group">
+                  <h4>Import Campaigns</h4>
+                  <p>Upload CSV file to import campaigns</p>
+                  <input type="file" id="campaignsFile" accept=".csv" style="display: none;" onchange="importCampaigns()">
+                  <button class="btn btn-outline" onclick="document.getElementById('campaignsFile').click()">
+                    <i class="fas fa-upload"></i>
+                    Choose File
+                  </button>
+                  <button class="btn btn-primary" onclick="downloadCampaignsTemplate()">
+                    <i class="fas fa-file-download"></i>
+                    Download Template
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
-    try {
-      const res = await fetch("/api/leads/assign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: selectedUser, leadIds: selectedLeads })
-      });
+          <!-- Import Results -->
+          <div id="importResults" class="import-results" style="display: none;">
+            <h3>Import Results</h3>
+            <div id="importResultsContent"></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-      const data = await res.json();
-      statusMsg.textContent = data.message || "Assignment completed";
-      statusMsg.style.display = "block";
-      fetchLeads();
-      fetchAssignments();
-    } catch (err) {
-      console.error("Error assigning leads", err);
-    }
-  });
+    <section id="sales-pipelines" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-project-diagram"></i>
+            Sales Pipeline Management
+          </h2>
+          <button class="btn btn-primary" onclick="createPipeline()">
+            <i class="fas fa-plus"></i>
+            Create Pipeline
+          </button>
+        </div>
+        <div class="card-content">
+          <div id="pipelinesList" class="pipelines-grid">
+            <!-- Pipelines will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </section>
 
-  document.getElementById("leadClearBtn").addEventListener("click", () => {
-    leadsList.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-  });
-
-  document.getElementById("leadRefreshBtn").addEventListener("click", () => {
-    fetchLeads();
-    fetchAssignments();
-  });
-
-  searchLeads.addEventListener("input", async (e) => {
-    const query = e.target.value.toLowerCase();
-    const res = await fetch("/api/leads/unassigned");
-    const leads = await res.json();
-    const filtered = leads.filter(lead =>
-      lead.name.toLowerCase().includes(query) ||
-      (lead.email && lead.email.toLowerCase().includes(query))
-    );
-    renderLeads(filtered);
-  });
-
-  // Initial load
-  fetchUsers();
-  fetchLeads();
-  fetchAssignments();
-});
-</script>
-
-
-
+    <section id="settings" class="section">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <i class="fas fa-cog"></i>
+            System Settings
+          </h2>
+        </div>
+        <div class="card-content">
+          <p>Settings configuration will be implemented here.</p>
+        </div>
+      </div>
+    </section>
   </main>
 </div>
 
-
-
 <script>
-// Navigation
-function showSection(sectionId) {
-  // Update active nav link
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.classList.remove('active');
-  });
-  event.target.classList.add('active');
-  
-  // Show/hide sections
-  document.querySelectorAll('.section').forEach(section => {
-    section.classList.remove('active');
-  });
-  document.getElementById(sectionId).classList.add('active');
-}
+let currentTheme = 'light';
+let dashboardData = null;
+let charts = {};
 
-// Utility functions
-function getAuthHeader() {
-  const token = localStorage.getItem('token');
-  return token ? { 'Authorization': 'Bearer ' + token } : {};
-}
-
-function escapeHtml(str) {
-  return String(str || '').replace(/[&<>"'`=\/]/g, s => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;',"/":'&#x2F;', "`":'&#x60;','=':'&#x3D;'
-  })[s]);
-}
-
-function showStatus(message, type = 'info') {
-  const statusEl = document.getElementById('statusMsg');
-  statusEl.textContent = message;
-  statusEl.className = `status-message status-${type}`;
-  statusEl.style.display = 'block';
-}
-
-function hideStatus() {
-  const statusEl = document.getElementById('statusMsg');
-  statusEl.style.display = 'none';
-}
-
-// Managers functionality
-async function loadManagers() {
-  try {
-    const res = await fetch('/api/admin/managers', { headers: {...getAuthHeader()} });
-    if (!res.ok) throw new Error('Failed to load managers');
-    
-    const data = await res.json();
-    const tbody = document.querySelector('#managersTable tbody');
-    tbody.innerHTML = '';
-    
-    data.forEach((manager, index) => {
-      // Manager row
-      const tr = document.createElement('tr');
-      tr.className = 'clickable';
-      tr.dataset.managerId = manager._id;
-      tr.dataset.expanded = 'false';
-      tr.innerHTML = `
-        <td>${escapeHtml(manager.name)}</td>
-        <td>${escapeHtml(manager.email)}</td>
-        <td>${new Date(manager.createdAt).toLocaleDateString()}</td>
-      `;
-      
-      // Employee accordion row (initially hidden)
-      const accordionTr = document.createElement('tr');
-      accordionTr.className = 'employee-accordion';
-      accordionTr.id = `accordion-${manager._id}`;
-      accordionTr.innerHTML = `
-        <td colspan="3">
-          <div class="employee-accordion-content">
-            <div class="employee-accordion-title">Assigned Employees</div>
-            <div id="employees-${manager._id}" class="employee-grid">
-              <div style="text-align: center; padding: 20px; color: var(--text-muted);">Loading...</div>
-            </div>
-          </div>
-        </td>
-      `;
-      
-      // Click handler for accordion
-      tr.addEventListener('click', () => toggleManagerAccordion(manager._id, tr));
-      
-      tbody.appendChild(tr);
-      tbody.appendChild(accordionTr);
-    });
-  } catch (err) {
-    console.error('Error loading managers:', err);
-  }
-}
-
-async function toggleManagerAccordion(managerId, managerRow) {
-  const accordionRow = document.getElementById(`accordion-${managerId}`);
-  const isExpanded = managerRow.dataset.expanded === 'true';
-  
-  if (isExpanded) {
-    // Collapse
-    accordionRow.classList.remove('show');
-    managerRow.classList.remove('expanded');
-    managerRow.dataset.expanded = 'false';
-  } else {
-    // Expand
-    accordionRow.classList.add('show');
-    managerRow.classList.add('expanded');
-    managerRow.dataset.expanded = 'true';
-    
-    // Load employees if not already loaded
-    await loadManagerEmployees(managerId);
-  }
-}
-
-async function loadManagerEmployees(managerId) {
-  const container = document.getElementById(`employees-${managerId}`);
-  
-  try {
-    // Get all employees and filter by manager on frontend
-    const res = await fetch('/api/admin/employees', { headers: {...getAuthHeader()} });
-    if (!res.ok) throw new Error('Failed to load employees');
-    
-    const allEmployees = await res.json();
-    // Filter employees by the selected manager
-    const employees = allEmployees.filter(emp => 
-      emp.manager && (emp.manager === managerId || emp.manager._id === managerId)
-    );
-    
-    if (employees.length === 0) {
-      container.innerHTML = '<div class="no-employees">No employees assigned to this manager</div>';
-    } else {
-      container.innerHTML = employees.map(emp => `
-        <div class="employee-card">
-          <div class="employee-card-name">${escapeHtml(emp.name)}</div>
-          <div class="employee-card-email">${escapeHtml(emp.email)}</div>
-        </div>
-      `).join('');
-    }
-  } catch (err) {
-    console.error('Error loading manager employees:', err);
-    container.innerHTML = '<div class="no-employees" style="color: var(--danger);">Error loading employees</div>';
-  }
-}
-
-async function showManagerEmployees(managerId) {
-  // This function is kept for backward compatibility but now handled by accordion
-  await loadManagerEmployees(managerId);
-}
-
-// Employees functionality
-async function loadEmployees() {
-  try {
-    const res = await fetch('/api/admin/employees', { headers: {...getAuthHeader()} });
-    if (!res.ok) throw new Error('Failed to load employees');
-    
-    const data = await res.json();
-    const tbody = document.querySelector('#employeesTable tbody');
-    tbody.innerHTML = '';
-    
-    data.forEach(emp => {
-      const managerName = emp.manager ? emp.manager.name : 'Unassigned';
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${escapeHtml(emp.name)}</td>
-        <td>${escapeHtml(emp.email)}</td>
-        <td>${escapeHtml(managerName)}</td>
-        <td>${new Date(emp.createdAt).toLocaleDateString()}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    console.error('Error loading employees:', err);
-  }
-}
-
-// Leads functionality
-async function loadLeads() {
-  try {
-    const res = await fetch('/api/admin/leads', { headers: {...getAuthHeader()} });
-    if (!res.ok) throw new Error('Failed to load leads');
-    
-    const data = await res.json();
-    const thead = document.getElementById('leadsHead');
-    const tbody = document.querySelector('#leadsTable tbody');
-
-    if (data.length > 0) {
-      const keys = Object.keys(data[0]).filter(k => k !== '_id');
-      thead.innerHTML = `<tr>${keys.map(k => `<th>${escapeHtml(k)}</th>`).join('')}</tr>`;
-      tbody.innerHTML = '';
-      data.forEach(lead => {
-        tbody.innerHTML += `<tr>${keys.map(k => `<td>${escapeHtml(lead[k])}</td>`).join('')}</tr>`;
-      });
-    }
-  } catch (err) {
-    console.error('Error loading leads:', err);
-  }
-}
-
-// Assignment functionality 
-let allEmployees = [];
-
-async function loadManagersForAssignment() {
-  const sel = document.getElementById('managerSelect');
-  sel.innerHTML = '<option value="">Loading managers...</option>';
-
-  try {
-    const res = await fetch('/api/admin/managers', { headers: {...getAuthHeader()} });
-    if (!res.ok) throw new Error('Failed to load managers');
-    
-    const data = await res.json();
-    sel.innerHTML = '<option value="">-- Select Manager --</option>';
-    data.forEach(m => {
-      const opt = document.createElement('option');
-      opt.value = m._id;
-      opt.textContent = `${m.name} (${m.email || 'no-email'})`;
-      sel.appendChild(opt);
-    });
-  } catch (err) {
-    sel.innerHTML = '<option value="">Error loading managers</option>';
-    console.error('Error loading managers for assignment:', err);
-  }
-}
-
-async function loadEmployeesForAssignment() {
-  const container = document.getElementById('employeesList');
-  container.innerHTML = '<div class="loading">Loading employees...</div>';
-  
-  try {
-    const res = await fetch('/api/admin/employees', { headers: {...getAuthHeader()} });
-    if (!res.ok) throw new Error('Failed to load employees');
-    
-    const data = await res.json();
-    allEmployees = data;
-    renderEmployeesForAssignment(data);
-  } catch (err) {
-    container.innerHTML = '<div class="empty-state">Error loading employees</div>';
-    console.error('Error loading employees for assignment:', err);
-  }
-}
-
-function renderEmployeesForAssignment(employees) {
-  const container = document.getElementById('employeesList');
-  
-  if (!employees.length) {
-    container.innerHTML = '<div class="empty-state">No employees found</div>';
-    return;
-  }
-  
-  container.innerHTML = '';
-  employees.forEach(emp => {
-    const item = document.createElement('div');
-    item.className = 'employee-item';
-    item.innerHTML = `
-      <input class="employee-checkbox" type="checkbox" data-id="${emp._id}">
-      <div class="employee-info">
-        <div class="employee-name">${escapeHtml(emp.name || 'Unnamed')}</div>
-        <div class="employee-details">
-          ${escapeHtml(emp.email || 'no-email')} • 
-          Manager: ${emp.manager ? escapeHtml(emp.manager.name || emp.manager) : 'Unassigned'}
-        </div>
-      </div>
-    `;
-    container.appendChild(item);
-  });
-}
-
-async function loadAssignments() {
-  const container = document.getElementById('assignmentsContainer');
-  container.innerHTML = '<div class="loading">Loading assignments...</div>';
-  
-  try {
-    const [mRes, eRes] = await Promise.all([
-      fetch('/api/admin/managers', { headers: {...getAuthHeader()} }),
-      fetch('/api/admin/employees', { headers: {...getAuthHeader()} })
-    ]);
-    
-    if (!mRes.ok || !eRes.ok) throw new Error('Failed to load data');
-
-    const managers = await mRes.json();
-    const employees = await eRes.json();
-
-    // Map managerId -> manager name
-    const managerMap = {};
-    managers.forEach(m => managerMap[m._id] = m.name);
-
-    // Group employees by manager
-    const grouped = {};
-    employees.forEach(emp => {
-      const managerId = emp.manager || 'unassigned';
-      if (!grouped[managerId]) grouped[managerId] = [];
-      grouped[managerId].push(emp);
-    });
-
-    // Render assignments
-    let html = '<div class="assignments-list">';
-    Object.keys(grouped).forEach(managerId => {
-      const managerName = managerId === 'unassigned' ? 'Unassigned' : (managerMap[managerId] || 'Unknown Manager');
-      html += `
-        <div class="manager-group">
-          <div class="manager-group-title">${escapeHtml(managerName)} (${grouped[managerId].length})</div>
-          <ul class="employee-list">
-            ${grouped[managerId].map(emp => 
-              `<li>${escapeHtml(emp.name)} — ${escapeHtml(emp.email || 'no-email')}</li>`
-            ).join('')}
-          </ul>
-        </div>
-      `;
-    });
-    html += '</div>';
-    
-    container.innerHTML = html || '<div class="empty-state">No assignments found</div>';
-  } catch (err) {
-    container.innerHTML = '<div class="empty-state">Error loading assignments</div>';
-    console.error('Error loading assignments:', err);
-  }
-}
-
-async function assignSelected() {
-  const managerId = document.getElementById('managerSelect').value;
-  const checkboxes = Array.from(document.querySelectorAll('.employee-checkbox:checked'));
-
-  if (!managerId) {
-    showStatus('Please select a manager.', 'error');
-    return;
-  }
-  
-  if (!checkboxes.length) {
-    showStatus('Please select at least one employee.', 'error');
-    return;
-  }
-
-  showStatus('Assigning employees...', 'info');
-  
-  try {
-    const tokenHeader = getAuthHeader();
-    const results = [];
-    
-    for (const checkbox of checkboxes) {
-      const employeeId = checkbox.getAttribute('data-id');
-      const res = await fetch('/api/admin/assign-employee', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...tokenHeader },
-        body: JSON.stringify({ employeeId, managerId })
-      });
-      const json = await res.json();
-      results.push({ ok: res.ok, json });
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login.html';
+        return;
     }
 
-    const failed = results.filter(r => !r.ok);
-    if (failed.length) {
-      showStatus(`Assigned ${results.length - failed.length} / ${results.length} employees. ${failed.length} failed.`, 'error');
-      console.error('Failed assignments:', failed);
-    } else {
-      showStatus(`Successfully assigned ${results.length} employees.`, 'success');
-    }
-
-    // Refresh data
-    await Promise.all([loadEmployeesForAssignment(), loadAssignments()]);
-  } catch (err) {
-    console.error('Assignment error:', err);
-    showStatus('Server error during assignment.', 'error');
-  }
-}
-
-function clearSelection() {
-  document.querySelectorAll('.employee-checkbox').forEach(cb => cb.checked = false);
-  showStatus('Selection cleared.', 'info');
-}
-
-function initSearch() {
-  const input = document.getElementById('searchEmployees');
-  input.addEventListener('input', () => {
-    const query = input.value.trim().toLowerCase();
-    if (!query) {
-      renderEmployeesForAssignment(allEmployees);
-      return;
-    }
+    await loadDashboardData();
+    await loadUsers();
+    await loadLeads();
+    await loadCampaigns();
+    await loadSims();
+    await loadAnalyticsData();
+    await loadPipelines();
     
-    const filtered = allEmployees.filter(emp => 
-      (emp.name && emp.name.toLowerCase().includes(query)) ||
-      (emp.email && emp.email.toLowerCase().includes(query))
-    );
-    renderEmployeesForAssignment(filtered);
-  });
-}
-
-// Event listeners
-document.getElementById('assignBtn').addEventListener('click', assignSelected);
-document.getElementById('clearBtn').addEventListener('click', clearSelection);
-document.getElementById('refreshBtn').addEventListener('click', async () => {
-  showStatus('Refreshing data...', 'info');
-  await Promise.all([loadManagersForAssignment(), loadEmployeesForAssignment(), loadAssignments()]);
-  hideStatus();
+    initializeCharts();
+    setTheme('light');
 });
 
-// Initialize
-(async function init() {
-  await Promise.all([loadManagers(), loadEmployees(), loadLeads()]);
-  await Promise.all([loadManagersForAssignment(), loadEmployeesForAssignment(), loadAssignments()]);
-  initSearch();
-})();
-</script>
+function setTheme(theme) {
+    currentTheme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    localStorage.setItem('theme', theme);
+}
 
+function showSection(sectionId) {
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    document.getElementById(sectionId).classList.add('active');
+    event.target.classList.add('active');
+    
+    const pageTitle = document.querySelector('.page-title');
+    const sectionNames = {
+        'overview': 'Dashboard Overview',
+        'users': 'User Management',
+        'leads': 'Lead Management',
+        'campaigns': 'Campaign Management',
+        'sims': 'SIM Management',
+        'analytics': 'Advanced Analytics',
+        'import-export': 'Import/Export Management',
+        'sales-pipelines': 'Sales Pipeline Management',
+        'settings': 'System Settings'
+    };
+    pageTitle.textContent = sectionNames[sectionId] || 'Dashboard';
+}
+
+async function loadDashboardData() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/admin/performance/dashboard', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            dashboardData = await response.json();
+            updateDashboardMetrics();
+        }
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+    }
+}
+
+function updateDashboardMetrics() {
+    if (!dashboardData) return;
+    
+    document.getElementById('totalUsers').textContent = dashboardData.totalUsers || 0;
+    document.getElementById('totalLeads').textContent = dashboardData.totalLeads || 0;
+    document.getElementById('totalCalls').textContent = dashboardData.totalCalls || 0;
+    document.getElementById('activeSims').textContent = dashboardData.activeSims || 0;
+}
+
+async function loadUsers() {
+    try {
+        const token = localStorage.getItem('token');
+        const [managersRes, employeesRes] = await Promise.all([
+            fetch('/api/admin/managers', { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch('/api/admin/employees', { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+        
+        if (managersRes.ok && employeesRes.ok) {
+            const managers = await managersRes.json();
+            const employees = await employeesRes.json();
+            renderUsersTable([...managers, ...employees]);
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+    }
+}
+
+function renderUsersTable(users) {
+    const tbody = document.querySelector('#usersTable tbody');
+    tbody.innerHTML = '';
+    
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td><span class="status-badge status-${user.role}">${user.role}</span></td>
+            <td><span class="status-badge status-active">Active</span></td>
+            <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+            <td>
+                <button class="btn btn-sm btn-outline">Edit</button>
+                <button class="btn btn-sm btn-outline">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+let allLeads = [];
+let filteredLeads = [];
+let currentPage = 1;
+const itemsPerPage = 10;
+
+async function loadLeads() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/admin/leads', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            allLeads = await response.json();
+            filteredLeads = [...allLeads];
+            displayLeads();
+        }
+    } catch (error) {
+        console.error('Error loading leads:', error);
+    }
+}
+
+function displayLeads() {
+    const tbody = document.getElementById('leadsTableBody');
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageLeads = filteredLeads.slice(startIndex, endIndex);
+    
+    tbody.innerHTML = pageLeads.map(lead => `
+        <tr>
+            <td><strong>${lead.name}</strong></td>
+            <td>${lead.phone}</td>
+            <td>${lead.email || '-'}</td>
+            <td><span class="status-badge status-${lead.status.toLowerCase().replace('-', '')}">${lead.status}</span></td>
+            <td>${lead.sector}</td>
+            <td>${lead.region}</td>
+            <td>${lead.assignedTo?.name || 'Unassigned'}</td>
+            <td>${lead.createdBy?.name || '-'}</td>
+            <td>${new Date(lead.createdAt).toLocaleDateString()}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="action-btn view" onclick="viewLead('${lead._id}')" title="View">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="action-btn edit" onclick="editLead('${lead._id}')" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="action-btn delete" onclick="deleteLead('${lead._id}')" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+    
+    generatePagination();
+}
+
+function generatePagination() {
+    const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
+    const pagination = document.getElementById('leadsPagination');
+    
+    if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+    }
+    
+    let paginationHTML = '';
+    
+    // Previous button
+    paginationHTML += `
+        <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+            <i class="fas fa-chevron-left"></i>
+        </button>
+    `;
+    
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+            paginationHTML += `
+                <button onclick="changePage(${i})" class="${i === currentPage ? 'active' : ''}">
+                    ${i}
+                </button>
+            `;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+            paginationHTML += '<span>...</span>';
+        }
+    }
+    
+    // Next button
+    paginationHTML += `
+        <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    `;
+    
+    pagination.innerHTML = paginationHTML;
+}
+
+function changePage(page) {
+    const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
+    if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        displayLeads();
+    }
+}
+
+function filterLeads() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const sectorFilter = document.getElementById('sectorFilter').value;
+    const regionFilter = document.getElementById('regionFilter').value;
+    const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+    
+    filteredLeads = allLeads.filter(lead => {
+        const matchesStatus = !statusFilter || lead.status === statusFilter;
+        const matchesSector = !sectorFilter || lead.sector === sectorFilter;
+        const matchesRegion = !regionFilter || lead.region === regionFilter;
+        const matchesSearch = !searchFilter || 
+            lead.name.toLowerCase().includes(searchFilter) ||
+            lead.phone.toLowerCase().includes(searchFilter) ||
+            (lead.email && lead.email.toLowerCase().includes(searchFilter));
+        
+        return matchesStatus && matchesSector && matchesRegion && matchesSearch;
+    });
+    
+    currentPage = 1;
+    displayLeads();
+}
+
+function showAddLeadModal() {
+    document.getElementById('leadModalTitle').textContent = 'Add New Lead';
+    document.getElementById('leadForm').reset();
+    document.getElementById('leadId').value = '';
+    document.getElementById('lossReasonGroup').style.display = 'none';
+    loadEmployeesForAssignment();
+    document.getElementById('leadModal').style.display = 'block';
+}
+
+function editLead(leadId) {
+    const lead = allLeads.find(l => l._id === leadId);
+    if (!lead) return;
+    
+    document.getElementById('leadModalTitle').textContent = 'Edit Lead';
+    document.getElementById('leadId').value = lead._id;
+    document.getElementById('leadName').value = lead.name;
+    document.getElementById('leadPhone').value = lead.phone;
+    document.getElementById('leadEmail').value = lead.email || '';
+    document.getElementById('leadStatus').value = lead.status;
+    document.getElementById('leadSector').value = lead.sector;
+    document.getElementById('leadRegion').value = lead.region;
+    document.getElementById('leadNotes').value = lead.notes || '';
+    document.getElementById('leadFollowUpDate').value = lead.followUpDate ? new Date(lead.followUpDate).toISOString().split('T')[0] : '';
+    document.getElementById('leadSellingPrice').value = lead.sellingPrice || '';
+    document.getElementById('leadLossReason').value = lead.lossReason || '';
+    
+    // Show/hide loss reason field based on status
+    if (lead.status === 'Lost') {
+        document.getElementById('lossReasonGroup').style.display = 'block';
+    } else {
+        document.getElementById('lossReasonGroup').style.display = 'none';
+    }
+    
+    loadEmployeesForAssignment(lead.assignedTo?._id);
+    document.getElementById('leadModal').style.display = 'block';
+}
+
+function viewLead(leadId) {
+    const lead = allLeads.find(l => l._id === leadId);
+    if (!lead) return;
+    
+    alert(`Lead Details:\n\nName: ${lead.name}\nPhone: ${lead.phone}\nEmail: ${lead.email || 'N/A'}\nStatus: ${lead.status}\nSector: ${lead.sector}\nRegion: ${lead.region}\nNotes: ${lead.notes || 'N/A'}\nAssigned To: ${lead.assignedTo?.name || 'Unassigned'}\nCreated By: ${lead.createdBy?.name || 'N/A'}\nCreated: ${new Date(lead.createdAt).toLocaleString()}`);
+}
+
+async function deleteLead(leadId) {
+    if (!confirm('Are you sure you want to delete this lead?')) return;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/admin/leads/${leadId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            allLeads = allLeads.filter(l => l._id !== leadId);
+            filteredLeads = filteredLeads.filter(l => l._id !== leadId);
+            displayLeads();
+            alert('Lead deleted successfully');
+        } else {
+            const error = await response.json();
+            alert(`Failed to delete lead: ${error.error}`);
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('Failed to delete lead');
+    }
+}
+
+async function saveLead() {
+    const form = document.getElementById('leadForm');
+    const formData = new FormData(form);
+    const leadData = Object.fromEntries(formData.entries());
+    
+    // Validate required fields
+    if (!leadData.name || !leadData.phone) {
+        alert('Name and Phone are required');
+        return;
+    }
+    
+    // Handle empty values
+    if (!leadData.email) delete leadData.email;
+    if (!leadData.notes) delete leadData.notes;
+    if (!leadData.followUpDate) delete leadData.followUpDate;
+    if (!leadData.sellingPrice) delete leadData.sellingPrice;
+    if (!leadData.lossReason) delete leadData.lossReason;
+    if (!leadData.assignedTo) delete leadData.assignedTo;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const isEdit = leadData.leadId;
+        const url = isEdit ? `/api/admin/leads/${leadData.leadId}` : '/api/admin/leads';
+        const method = isEdit ? 'PUT' : 'POST';
+        
+        delete leadData.leadId; // Remove from request body
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(leadData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            closeLeadModal();
+            await loadLeads(); // Reload leads
+            alert(isEdit ? 'Lead updated successfully' : 'Lead created successfully');
+        } else {
+            const error = await response.json();
+            alert(`Failed to save lead: ${error.error}`);
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        alert('Failed to save lead');
+    }
+}
+
+function closeLeadModal() {
+    document.getElementById('leadModal').style.display = 'none';
+}
+
+async function loadEmployeesForAssignment(selectedId = '') {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/admin/employees', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const employees = await response.json();
+            const select = document.getElementById('leadAssignedTo');
+            
+            // Keep the "Unassigned" option
+            select.innerHTML = '<option value="">Unassigned</option>';
+            
+            employees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp._id;
+                option.textContent = emp.name;
+                if (emp._id === selectedId) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading employees:', error);
+    }
+}
+
+// Handle status change to show/hide loss reason
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('leadStatus');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            const lossReasonGroup = document.getElementById('lossReasonGroup');
+            if (this.value === 'Lost') {
+                lossReasonGroup.style.display = 'block';
+            } else {
+                lossReasonGroup.style.display = 'none';
+            }
+        });
+    }
+});
+
+async function loadCampaigns() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/admin/campaigns', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const campaigns = await response.json();
+            renderCampaignsTable(campaigns);
+        }
+    } catch (error) {
+        console.error('Error loading campaigns:', error);
+    }
+}
+
+function renderCampaignsTable(campaigns) {
+    const tbody = document.querySelector('#campaignsTable tbody');
+    tbody.innerHTML = '';
+    
+    campaigns.forEach(campaign => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${campaign.name}</td>
+            <td>${campaign.campaignType}</td>
+            <td><span class="status-badge status-${campaign.status.toLowerCase()}">${campaign.status}</span></td>
+            <td>${new Date(campaign.startDate).toLocaleDateString()}</td>
+            <td>${new Date(campaign.endDate).toLocaleDateString()}</td>
+            <td>${campaign.metrics?.conversionRate || 0}%</td>
+            <td>
+                <button class="btn btn-sm btn-outline">Edit</button>
+                <button class="btn btn-sm btn-outline">View</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+async function loadSims() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/admin/sims', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const sims = await response.json();
+            renderSimsTable(sims);
+        }
+    } catch (error) {
+        console.error('Error loading SIMs:', error);
+    }
+}
+
+function renderSimsTable(sims) {
+    const tbody = document.querySelector('#simsTable tbody');
+    tbody.innerHTML = '';
+    
+    sims.forEach(sim => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${sim.number}</td>
+            <td>${sim.carrier || 'N/A'}</td>
+            <td><span class="status-badge status-${sim.status.toLowerCase()}">${sim.status}</span></td>
+            <td>₹${sim.balance || 0}</td>
+            <td>${sim.employee || 'Unassigned'}</td>
+            <td><span class="status-badge status-active">Healthy</span></td>
+            <td>
+                <button class="btn btn-sm btn-outline">Edit</button>
+                <button class="btn btn-sm btn-outline">Assign</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+
+
+let analyticsData = null;
+
+async function loadAnalyticsData() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/admin/leads/analytics', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            analyticsData = await response.json();
+        }
+    } catch (error) {
+        console.error('Error loading analytics data:', error);
+    }
+}
+
+function initializeCharts() {
+    // Initialize existing charts with real data
+    initializeLeadStatusChart();
+    initializeCallAnalyticsChart();
+    initializeSalesChart();
+    initializeTeamPerformanceChart();
+    
+    // Initialize new analytics charts
+    initializeLeadsBySectorChart();
+    initializeLeadsByRegionChart();
+    initializeHotLeadsBySectorChart();
+    initializeInterestedLeadsBySectorChart();
+    initializeHotLeadsByRegionChart();
+    initializeInterestedLeadsByRegionChart();
+    initializeMonthlyLeadTrendChart();
+    initializeSectorRegionMatrixChart();
+}
+
+function initializeLeadStatusChart() {
+    const leadCtx = document.getElementById('leadStatusChart')?.getContext('2d');
+    if (leadCtx) {
+        const data = analyticsData?.statusDistribution || {};
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        
+        charts.leadStatus = new Chart(leadCtx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
+                        '#6366f1', '#10b981', '#f59e0b', '#06b6d4', '#8b5cf6', '#ef4444'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+}
+
+function initializeCallAnalyticsChart() {
+    const callCtx = document.getElementById('callAnalyticsChart')?.getContext('2d');
+    if (callCtx) {
+        charts.callAnalytics = new Chart(callCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Completed', 'Missed', 'Declined', 'Wrong Number'],
+                datasets: [{
+                    label: 'Calls',
+                    data: [890, 210, 150, 100],
+                    backgroundColor: '#6366f1',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+}
+
+function initializeSalesChart() {
+    const salesCtx = document.getElementById('salesChart')?.getContext('2d');
+    if (salesCtx) {
+        charts.sales = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Sales (₹)',
+                    data: [50000, 65000, 45000, 80000, 70000, 90000],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+}
+
+function initializeTeamPerformanceChart() {
+    const teamCtx = document.getElementById('teamPerformanceChart')?.getContext('2d');
+    if (teamCtx) {
+        charts.teamPerformance = new Chart(teamCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Productivity', 'Quality', 'Efficiency', 'Communication', 'Teamwork'],
+                datasets: [{
+                    label: 'Current Month',
+                    data: [85, 90, 75, 80, 88],
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    pointBackgroundColor: '#6366f1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+}
+
+function initializeLeadsBySectorChart() {
+    const ctx = document.getElementById('leadsBySectorChart')?.getContext('2d');
+    if (ctx && analyticsData) {
+        const data = analyticsData.sectorDistribution || {};
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        
+        charts.leadsBySector = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Leads',
+                    data: values,
+                    backgroundColor: '#6366f1',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+}
+
+function initializeLeadsByRegionChart() {
+    const ctx = document.getElementById('leadsByRegionChart')?.getContext('2d');
+    if (ctx && analyticsData) {
+        const data = analyticsData.regionDistribution || {};
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        
+        charts.leadsByRegion = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Leads',
+                    data: values,
+                    backgroundColor: '#10b981',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+}
+
+function initializeHotLeadsBySectorChart() {
+    const ctx = document.getElementById('hotLeadsBySectorChart')?.getContext('2d');
+    if (ctx && analyticsData) {
+        const data = analyticsData.hotLeadsBySector || {};
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        
+        charts.hotLeadsBySector = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
+                        '#ef4444', '#f59e0b', '#10b981', '#06b6d4', '#8b5cf6', '#6366f1'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+}
+
+function initializeInterestedLeadsBySectorChart() {
+    const ctx = document.getElementById('interestedLeadsBySectorChart')?.getContext('2d');
+    if (ctx && analyticsData) {
+        const data = analyticsData.interestedLeadsBySector || {};
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        
+        charts.interestedLeadsBySector = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
+                        '#10b981', '#06b6d4', '#8b5cf6', '#6366f1', '#f59e0b', '#ef4444'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+}
+
+function initializeHotLeadsByRegionChart() {
+    const ctx = document.getElementById('hotLeadsByRegionChart')?.getContext('2d');
+    if (ctx && analyticsData) {
+        const data = analyticsData.hotLeadsByRegion || {};
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        
+        charts.hotLeadsByRegion = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
+                        '#ef4444', '#f59e0b', '#10b981', '#06b6d4', '#8b5cf6', '#6366f1'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+}
+
+function initializeInterestedLeadsByRegionChart() {
+    const ctx = document.getElementById('interestedLeadsByRegionChart')?.getContext('2d');
+    if (ctx && analyticsData) {
+        const data = analyticsData.interestedLeadsByRegion || {};
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        
+        charts.interestedLeadsByRegion = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
+                        '#10b981', '#06b6d4', '#8b5cf6', '#6366f1', '#f59e0b', '#ef4444'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+}
+
+function initializeMonthlyLeadTrendChart() {
+    const ctx = document.getElementById('monthlyLeadTrendChart')?.getContext('2d');
+    if (ctx && analyticsData) {
+        const data = analyticsData.monthlyLeadTrend || {};
+        const labels = Object.keys(data);
+        const values = Object.values(data);
+        
+        charts.monthlyLeadTrend = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Leads Created',
+                    data: values,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+}
+
+function initializeSectorRegionMatrixChart() {
+    const ctx = document.getElementById('sectorRegionMatrixChart')?.getContext('2d');
+    if (ctx && analyticsData) {
+        const matrixData = analyticsData.sectorRegionMatrix || {};
+        const sectors = Object.keys(matrixData);
+        const regions = ['North', 'South', 'East', 'West', 'Central', 'International'];
+        
+        // Prepare data for stacked bar chart
+        const datasets = regions.map((region, index) => ({
+            label: region,
+            data: sectors.map(sector => {
+                const sectorData = matrixData[sector] || {};
+                const regionData = sectorData[region] || {};
+                return (regionData.hot || 0) + (regionData.interested || 0);
+            }),
+            backgroundColor: [
+                '#ef4444', '#f59e0b', '#10b981', '#06b6d4', '#8b5cf6', '#6366f1'
+            ][index % 6]
+        }));
+        
+        charts.sectorRegionMatrix = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: sectors,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+}
+
+async function refreshData() {
+    await loadDashboardData();
+    await loadUsers();
+    await loadLeads();
+    await loadCampaigns();
+    await loadSims();
+    await loadAnalyticsData();
+    
+    // Update charts with new data
+    if (analyticsData) {
+        updateChartsWithNewData();
+    }
+}
+
+function updateChartsWithNewData() {
+    // Update existing charts with new data
+    if (charts.leadStatus && analyticsData?.statusDistribution) {
+        const data = analyticsData.statusDistribution;
+        charts.leadStatus.data.labels = Object.keys(data);
+        charts.leadStatus.data.datasets[0].data = Object.values(data);
+        charts.leadStatus.update();
+    }
+    
+    // Update new charts
+    if (charts.leadsBySector && analyticsData?.sectorDistribution) {
+        const data = analyticsData.sectorDistribution;
+        charts.leadsBySector.data.labels = Object.keys(data);
+        charts.leadsBySector.data.datasets[0].data = Object.values(data);
+        charts.leadsBySector.update();
+    }
+    
+    if (charts.leadsByRegion && analyticsData?.regionDistribution) {
+        const data = analyticsData.regionDistribution;
+        charts.leadsByRegion.data.labels = Object.keys(data);
+        charts.leadsByRegion.data.datasets[0].data = Object.values(data);
+        charts.leadsByRegion.update();
+    }
+    
+    // Update hot leads by sector chart
+    if (charts.hotLeadsBySector && analyticsData?.hotLeadsBySector) {
+        const data = analyticsData.hotLeadsBySector;
+        charts.hotLeadsBySector.data.labels = Object.keys(data);
+        charts.hotLeadsBySector.data.datasets[0].data = Object.values(data);
+        charts.hotLeadsBySector.update();
+    }
+    
+    // Update interested leads by sector chart
+    if (charts.interestedLeadsBySector && analyticsData?.interestedLeadsBySector) {
+        const data = analyticsData.interestedLeadsBySector;
+        charts.interestedLeadsBySector.data.labels = Object.keys(data);
+        charts.interestedLeadsBySector.data.datasets[0].data = Object.values(data);
+        charts.interestedLeadsBySector.update();
+    }
+    
+    // Update hot leads by region chart
+    if (charts.hotLeadsByRegion && analyticsData?.hotLeadsByRegion) {
+        const data = analyticsData.hotLeadsByRegion;
+        charts.hotLeadsByRegion.data.labels = Object.keys(data);
+        charts.hotLeadsByRegion.data.datasets[0].data = Object.values(data);
+        charts.hotLeadsByRegion.update();
+    }
+    
+    // Update interested leads by region chart
+    if (charts.interestedLeadsByRegion && analyticsData?.interestedLeadsByRegion) {
+        const data = analyticsData.interestedLeadsByRegion;
+        charts.interestedLeadsByRegion.data.labels = Object.keys(data);
+        charts.interestedLeadsByRegion.data.datasets[0].data = Object.values(data);
+        charts.interestedLeadsByRegion.update();
+    }
+    
+    // Update monthly lead trend chart
+    if (charts.monthlyLeadTrend && analyticsData?.monthlyLeadTrend) {
+        const data = analyticsData.monthlyLeadTrend;
+        charts.monthlyLeadTrend.data.labels = Object.keys(data);
+        charts.monthlyLeadTrend.data.datasets[0].data = Object.values(data);
+        charts.monthlyLeadTrend.update();
+    }
+    
+    // Update sector-region matrix chart
+    if (charts.sectorRegionMatrix && analyticsData?.sectorRegionMatrix) {
+        const matrixData = analyticsData.sectorRegionMatrix;
+        const sectors = Object.keys(matrixData);
+        const regions = ['North', 'South', 'East', 'West', 'Central', 'International'];
+        
+        const datasets = regions.map((region, index) => ({
+            label: region,
+            data: sectors.map(sector => {
+                const sectorData = matrixData[sector] || {};
+                const regionData = sectorData[region] || {};
+                return (regionData.hot || 0) + (regionData.interested || 0);
+            }),
+            backgroundColor: [
+                '#ef4444', '#f59e0b', '#10b981', '#06b6d4', '#8b5cf6', '#6366f1'
+            ][index % 6]
+        }));
+        
+        charts.sectorRegionMatrix.data.labels = sectors;
+        charts.sectorRegionMatrix.data.datasets = datasets;
+        charts.sectorRegionMatrix.update();
+    }
+}
+
+async function refreshAnalytics() {
+    try {
+        await loadAnalyticsData();
+        if (analyticsData) {
+            updateChartsWithNewData();
+            console.log('Analytics refreshed successfully');
+        }
+    } catch (error) {
+        console.error('Error refreshing analytics:', error);
+    }
+}
+
+// ===== IMPORT/EXPORT FUNCTIONS =====
+
+async function exportLeads() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/import-export/leads/export', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `leads-export-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            alert('Failed to export leads');
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Export failed');
+    }
+}
+
+async function exportCampaigns() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/import-export/campaigns/export', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `campaigns-export-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            alert('Failed to export campaigns');
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        alert('Export failed');
+    }
+}
+
+async function importLeads() {
+    const fileInput = document.getElementById('leadsFile');
+    const file = fileInput.files[0];
+    
+    if (!file) return;
+    
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/import-export/leads/import', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showImportResults(result);
+            fileInput.value = '';
+        } else {
+            alert(`Import failed: ${result.error}`);
+        }
+    } catch (error) {
+        console.error('Import error:', error);
+        alert('Import failed');
+    }
+}
+
+async function importCampaigns() {
+    const fileInput = document.getElementById('campaignsFile');
+    const file = fileInput.files[0];
+    
+    if (!file) return;
+    
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/import-export/campaigns/import', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showImportResults(result);
+            fileInput.value = '';
+        } else {
+            alert(`Import failed: ${result.error}`);
+        }
+    } catch (error) {
+        console.error('Import error:', error);
+        alert('Import failed');
+    }
+}
+
+async function downloadLeadsTemplate() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/import-export/templates/leads', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'leads-template.csv';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            alert('Failed to download template');
+        }
+    } catch (error) {
+        console.error('Template download error:', error);
+        alert('Template download failed');
+    }
+}
+
+async function downloadCampaignsTemplate() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/import-export/templates/campaigns', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'campaigns-template.csv';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            alert('Failed to download template');
+        }
+    } catch (error) {
+        console.error('Template download error:', error);
+        alert('Template download failed');
+    }
+}
+
+function showImportResults(result) {
+    const resultsDiv = document.getElementById('importResults');
+    const contentDiv = document.getElementById('importResultsContent');
+    
+    contentDiv.innerHTML = `
+        <div class="import-summary">
+            <p><strong>Success:</strong> ${result.successCount} items imported</p>
+            <p><strong>Errors:</strong> ${result.errorCount} items failed</p>
+            ${result.errors && result.errors.length > 0 ? `
+                <div class="import-errors">
+                    <h4>Error Details:</h4>
+                    <ul>
+                        ${result.errors.map(error => `<li>${error}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    resultsDiv.style.display = 'block';
+    
+    // Hide results after 10 seconds
+    setTimeout(() => {
+        resultsDiv.style.display = 'none';
+    }, 10000);
+}
+
+// ===== SALES PIPELINE FUNCTIONS =====
+
+async function loadPipelines() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/sales-pipelines', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const pipelines = await response.json();
+            displayPipelines(pipelines);
+        }
+    } catch (error) {
+        console.error('Error loading pipelines:', error);
+    }
+}
+
+function displayPipelines(pipelines) {
+    const container = document.getElementById('pipelinesList');
+    
+    if (pipelines.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-project-diagram"></i>
+                <h3>No Sales Pipelines</h3>
+                <p>Create your first sales pipeline to get started</p>
+                <button class="btn btn-primary" onclick="createPipeline()">
+                    <i class="fas fa-plus"></i>
+                    Create Pipeline
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = pipelines.map(pipeline => `
+        <div class="pipeline-card">
+            <div class="pipeline-header">
+                <div class="pipeline-name">${pipeline.name}</div>
+                <span class="pipeline-status ${pipeline.status.toLowerCase()}">${pipeline.status}</span>
+            </div>
+            
+            <div class="pipeline-metrics">
+                <div class="pipeline-metric">
+                    <div class="pipeline-metric-value">${pipeline.metrics.totalLeads}</div>
+                    <div class="pipeline-metric-label">Total Leads</div>
+                </div>
+                <div class="pipeline-metric">
+                    <div class="pipeline-metric-value">${pipeline.metrics.conversionRate}%</div>
+                    <div class="pipeline-metric-label">Conversion Rate</div>
+                </div>
+            </div>
+            
+            <div class="pipeline-stages">
+                <h4>Stages (${pipeline.stages.length})</h4>
+                <div class="stage-list">
+                    ${pipeline.stages.slice(0, 3).map(stage => 
+                        `<span class="stage-tag">${stage.name}</span>`
+                    ).join('')}
+                    ${pipeline.stages.length > 3 ? 
+                        `<span class="stage-tag">+${pipeline.stages.length - 3} more</span>` : ''
+                    }
+                </div>
+            </div>
+            
+            <div class="pipeline-actions">
+                <button class="btn btn-outline" onclick="viewPipeline('${pipeline._id}')">
+                    <i class="fas fa-eye"></i>
+                    View
+                </button>
+                <button class="btn btn-outline" onclick="editPipeline('${pipeline._id}')">
+                    <i class="fas fa-edit"></i>
+                    Edit
+                </button>
+                <button class="btn btn-outline" onclick="deletePipeline('${pipeline._id}')">
+                    <i class="fas fa-trash"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function createPipeline() {
+    const name = prompt('Enter pipeline name:');
+    if (!name) return;
+    
+    const description = prompt('Enter pipeline description (optional):');
+    
+    const pipelineData = {
+        name,
+        description: description || ''
+    };
+    
+    savePipeline(pipelineData);
+}
+
+async function savePipeline(pipelineData) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/sales-pipelines', {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(pipelineData)
+        });
+        
+        if (response.ok) {
+            loadPipelines();
+            alert('Pipeline created successfully');
+        } else {
+            const error = await response.json();
+            alert(`Failed to create pipeline: ${error.error}`);
+        }
+    } catch (error) {
+        console.error('Pipeline creation error:', error);
+        alert('Failed to create pipeline');
+    }
+}
+
+function viewPipeline(pipelineId) {
+    // Implement pipeline view functionality
+    alert('Pipeline view functionality will be implemented');
+}
+
+function editPipeline(pipelineId) {
+    // Implement pipeline edit functionality
+    alert('Pipeline edit functionality will be implemented');
+}
+
+async function deletePipeline(pipelineId) {
+    if (!confirm('Are you sure you want to delete this pipeline?')) return;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/sales-pipelines/${pipelineId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            loadPipelines();
+            alert('Pipeline deleted successfully');
+        } else {
+            const error = await response.json();
+            alert(`Failed to delete pipeline: ${error.error}`);
+        }
+    } catch (error) {
+        console.error('Pipeline deletion error:', error);
+        alert('Failed to delete pipeline');
+    }
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login.html';
+}
+</script>
 </body>
 </html>

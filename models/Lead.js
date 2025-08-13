@@ -14,11 +14,15 @@ const leadSchema = new mongoose.Schema({
     sellingPrice: { type: Number }, // Price when lead is won
     lossReason: { type: String }, // Reason when lead is lost
     reassignmentDate: { type: Date }, // Date when lead should be reassigned (for lost leads)
+    // New fields for analytics
+    sector: { type: String, enum: ['Technology', 'Healthcare', 'Finance', 'Education', 'Retail', 'Manufacturing', 'Real Estate', 'Other'], default: 'Other' },
+    region: { type: String, enum: ['North', 'South', 'East', 'West', 'Central', 'International'], default: 'Central' },
     previousAssignments: [{ 
         employee: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         assignedAt: { type: Date, default: Date.now },
         status: { type: String }
     }],
+    pipeline: { type: mongoose.Schema.Types.ObjectId, ref: 'SalesPipeline' },
     createdAt: { type: Date, default: Date.now }
 });
 

@@ -5,7 +5,7 @@ const User = require('../models/User');
 
 // POST /leads - Add new lead
 router.post('/', async (req, res) => {
-    const { name, phone, email, notes, assignedTo, createdBy } = req.body;
+    const { name, phone, email, notes, assignedTo, createdBy, sector, region } = req.body;
 
     try {
         const lead = new Lead({
@@ -14,7 +14,9 @@ router.post('/', async (req, res) => {
             email,
             notes,
             assignedTo,
-            createdBy
+            createdBy,
+            sector: sector || 'Other',
+            region: region || 'Central'
         });
 
         await lead.save();

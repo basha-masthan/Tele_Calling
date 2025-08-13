@@ -2,34 +2,111 @@
 <html>
 <head>
     <title>Add Lead</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 20px; }
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 { text-align: center; color: #333; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        select { background: white; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button:hover { background: #218838; }
+        .error { color: red; text-align: center; margin-top: 10px; }
+        .success { color: green; text-align: center; margin-top: 10px; }
+    </style>
 </head>
 <body>
+
+<div class="form-container">
     <h2>Add New Lead</h2>
     <form id="leadForm">
-        <label>Name:</label><br>
-        <input type="text" name="name" required><br><br>
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
 
-        <label>Phone:</label><br>
-        <input type="text" name="phone" required><br><br>
+        <div class="form-group">
+            <label for="phone">Phone:</label>
+            <input type="text" id="phone" name="phone" required>
+        </div>
 
-        <label>Email:</label><br>
-        <input type="email" name="email"><br><br>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email">
+        </div>
 
-        <label>Notes:</label><br>
-        <textarea name="notes"></textarea><br><br>
+        <div class="form-group">
+            <label for="sector">Sector:</label>
+            <select id="sector" name="sector" required>
+                <option value="">Select Sector</option>
+                <option value="Technology">Technology</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Finance">Finance</option>
+                <option value="Education">Education</option>
+                <option value="Retail">Retail</option>
+                <option value="Manufacturing">Manufacturing</option>
+                <option value="Real Estate">Real Estate</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="region">Region:</label>
+            <select id="region" name="region" required>
+                <option value="">Select Region</option>
+                <option value="North">North</option>
+                <option value="South">South</option>
+                <option value="East">East</option>
+                <option value="West">West</option>
+                <option value="Central">Central</option>
+                <option value="International">International</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="notes">Notes:</label>
+            <textarea id="notes" name="notes" rows="4"></textarea>
+        </div>
 
         <button type="submit">Add Lead</button>
     </form>
 
-    <p id="message"></p>
+    <div id="message"></div>
+</div>
 
-    <script>
-        document.getElementById('leadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+<script>
+    document.getElementById('leadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-            const formData = new FormData(e.target);
-            const leadData = Object.fromEntries(formData.entries());
+        const formData = new FormData(e.target);
+        const leadData = Object.fromEntries(formData.entries());
 
+        try {
             const res = await fetch('/api/leads', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -37,8 +114,23 @@
             });
 
             const data = await res.json();
-            document.getElementById('message').textContent = data.message || data.error;
-        });
-    </script>
+            const messageDiv = document.getElementById('message');
+            
+            if (res.ok) {
+                messageDiv.textContent = data.message || 'Lead added successfully!';
+                messageDiv.className = 'success';
+                document.getElementById('leadForm').reset();
+            } else {
+                messageDiv.textContent = data.error || 'Failed to add lead';
+                messageDiv.className = 'error';
+            }
+        } catch (err) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = 'Server error occurred';
+            messageDiv.className = 'error';
+        }
+    });
+</script>
+
 </body>
 </html>
