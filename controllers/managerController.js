@@ -1,175 +1,317 @@
 // controllers/managerController.js
-const User = require('../models/User');
 const Lead = require('../models/Lead');
-const CallLog = require('../models/CallLog');
-const mongoose = require('mongoose');
+const User = require('../models/User');
 
-exports.getEmployees = async (req, res) => {
+// GET /api/manager/leads
+// Returns all leads under the manager (including employee leads)
+exports.getManagerLeads = async (req, res) => {
   try {
-    const employees = await User.find({ role: 'employee', manager: req.user._id }, '_id name email createdAt');
-    res.json(employees);
-  } catch (err) {
-    console.error('getEmployees error', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-exports.getMyLeads = async (req, res) => {
-  try {
-    // employees under this manager
-    const employees = await User.find({ role: 'employee', manager: req.user._id }, '_id');
-    const employeeIds = employees.map(e => e._id);
-
+    const managerId = req.user._id;
+    
+    // Get all employees under this manager
+    const employees = await User.find({ manager: managerId }).select('_id name');
+    const employeeIds = employees.map(emp => emp._id);
+    
+    // Get leads created by manager and assigned to employees under manager
     const leads = await Lead.find({
       $or: [
-        { createdBy: req.user._id },
+        { createdBy: managerId },
         { assignedTo: { $in: employeeIds } }
       ]
     })
+    .select('name phone email status notes followUpDate assignedTo createdBy sellingPrice lossReason reassignmentDate createdAt')
     .populate('assignedTo', 'name email')
     .populate('createdBy', 'name email')
     .sort({ createdAt: -1 });
 
     res.json(leads);
   } catch (err) {
-    console.error('getMyLeads error', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('getManagerLeads error:', err);
+    res.status(500).json({ error: 'Failed to fetch leads', details: err.message });
   }
 };
 
-exports.getLeadById = async (req, res) => {
+// GET /api/manager/leads/status/:status
+// Get leads by specific status
+exports.getLeadsByStatus = async (req, res) => {
   try {
-    const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid lead id' });
-    const lead = await Lead.findById(id)
-      .populate('assignedTo', 'name email')
-      .populate('createdBy', 'name email');
-
-    if (!lead) return res.status(404).json({ message: 'Lead not found' });
-    res.json(lead);
-  } catch (err) {
-    console.error('getLeadById error', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-exports.getEmployeeLeads = async (req, res) => {
-  try {
-    const empId = req.params.id;
-    if (!mongoose.Types.ObjectId.isValid(empId)) return res.status(400).json({ message: 'Invalid employee id' });
-
-    // ensure employee belongs to this manager
-    const emp = await User.findById(empId);
-    if (!emp || String(emp.manager) !== String(req.user._id)) {
-      return res.status(403).json({ message: 'Employee not found under this manager' });
-    }
-
-    const leads = await Lead.find({ assignedTo: empId })
-      .populate('assignedTo', 'name email')
-      .populate('createdBy', 'name email');
+    const { status } = req.params;
+    const managerId = req.user._id;
+    
+    // Get all employees under this manager
+    const employees = await User.find({ manager: managerId }).select('_id name');
+    const employeeIds = employees.map(emp => emp._id);
+    
+    const leads = await Lead.find({
+      status: status,
+      $or: [
+        { createdBy: managerId },
+        { assignedTo: { $in: employeeIds } }
+      ]
+    })
+    .select('name phone email status notes followUpDate assignedTo createdBy sellingPrice lossReason reassignmentDate createdAt')
+    .populate('assignedTo', 'name email')
+    .populate('createdBy', 'name email')
+    .sort({ createdAt: -1 });
 
     res.json(leads);
   } catch (err) {
-    console.error('getEmployeeLeads error', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('getLeadsByStatus error:', err);
+    res.status(500).json({ error: 'Failed to fetch leads', details: err.message });
   }
 };
 
-exports.getTeamCallLogs = async (req, res) => {
+// GET /api/manager/dashboard
+// Get dashboard summary for manager
+exports.getManagerDashboard = async (req, res) => {
   try {
-    const employees = await User.find({ role: 'employee', manager: req.user._id }, '_id name');
-    const employeeIds = employees.map(e => e._id);
-
-    const logs = await CallLog.find({ employee: { $in: employeeIds } })
-      .populate('employee', 'name')
-      .populate('lead', 'name phone')
-      .sort({ createdAt: -1 })
-      .limit(200);
-
-    res.json(logs);
+    const managerId = req.user._id;
+    
+    // Get all employees under this manager
+    const employees = await User.find({ manager: managerId }).select('_id name');
+    const employeeIds = employees.map(emp => emp._id);
+    
+    // Get leads under this manager
+    const leads = await Lead.find({
+      $or: [
+        { createdBy: managerId },
+        { assignedTo: { $in: employeeIds } }
+      ]
+    });
+    
+    // Calculate statistics
+    const stats = {
+      total: leads.length,
+      new: leads.filter(l => l.status === 'New').length,
+      interested: leads.filter(l => l.status === 'Interested').length,
+      hot: leads.filter(l => l.status === 'Hot').length,
+      followUp: leads.filter(l => l.status === 'Follow-up').length,
+      won: leads.filter(l => l.status === 'Won').length,
+      lost: leads.filter(l => l.status === 'Lost').length
+    };
+    
+    // Calculate total sales value
+    const totalSales = leads
+      .filter(l => l.status === 'Won' && l.sellingPrice)
+      .reduce((sum, l) => sum + l.sellingPrice, 0);
+    
+    // Get hot leads that need reassignment
+    const hotLeadsNeedingReassignment = leads.filter(l => 
+      l.status === 'Hot' && 
+      l.reassignmentDate && 
+      new Date() >= l.reassignmentDate
+    );
+    
+    // Get lost leads that need reassignment (after 2 weeks)
+    const lostLeadsNeedingReassignment = leads.filter(l => 
+      l.status === 'Lost' && 
+      l.reassignmentDate && 
+      new Date() >= l.reassignmentDate
+    );
+    
+    res.json({
+      stats,
+      totalSales,
+      hotLeadsNeedingReassignment: hotLeadsNeedingReassignment.length,
+      lostLeadsNeedingReassignment: lostLeadsNeedingReassignment.length,
+      employees: employees.length
+    });
   } catch (err) {
-    console.error('getTeamCallLogs error', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('getManagerDashboard error:', err);
+    res.status(500).json({ error: 'Failed to fetch dashboard', details: err.message });
   }
 };
 
-exports.assignLead = async (req, res) => {
+// PUT /api/manager/update-lead-status
+// Manager can update lead status and assign to employees
+exports.updateLeadStatus = async (req, res) => {
   try {
-    const { leadId, employeeId } = req.body;
-    if (!leadId || !employeeId) return res.status(400).json({ message: 'leadId and employeeId required' });
-    if (!mongoose.Types.ObjectId.isValid(leadId) || !mongoose.Types.ObjectId.isValid(employeeId)) {
-      return res.status(400).json({ message: 'Invalid IDs' });
+    const { leadId, status, assignedTo, followUpDate, sellingPrice, lossReason } = req.body;
+    const managerId = req.user._id;
+    
+    if (!leadId || !status) {
+      return res.status(400).json({ error: 'leadId and status are required' });
     }
-
-    const employee = await User.findById(employeeId);
-    if (!employee || String(employee.manager) !== String(req.user._id)) {
-      return res.status(403).json({ message: 'Employee not under this manager' });
+    
+    const lead = await Lead.findById(leadId);
+    if (!lead) {
+      return res.status(404).json({ error: 'Lead not found' });
     }
-
-    const lead = await Lead.findByIdAndUpdate(leadId, { assignedTo: employeeId }, { new: true })
-      .populate('assignedTo', 'name email')
-      .populate('createdBy', 'name email');
-
-    if (!lead) return res.status(404).json({ message: 'Lead not found' });
-
-    res.json({ message: 'Lead assigned', lead });
-  } catch (err) {
-    console.error('assignLead error', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-exports.createLead = async (req, res) => {
-  try {
-    const { name, phone, email, notes } = req.body;
-    if (!name || !phone) return res.status(400).json({ message: 'Name and phone required' });
-
-    const lead = new Lead({ name, phone, email, notes, createdBy: req.user._id });
+    
+    // Verify manager has access to this lead
+    const employees = await User.find({ manager: managerId }).select('_id');
+    const employeeIds = employees.map(emp => emp._id);
+    
+    if (!employeeIds.includes(lead.assignedTo) && lead.createdBy.toString() !== managerId.toString()) {
+      return res.status(403).json({ error: 'Not authorized to update this lead' });
+    }
+    
+    // Track previous assignment
+    if (lead.assignedTo && String(lead.assignedTo) !== String(assignedTo)) {
+      if (!lead.previousAssignments) lead.previousAssignments = [];
+      lead.previousAssignments.push({
+        employee: lead.assignedTo,
+        assignedAt: new Date(),
+        status: lead.status
+      });
+    }
+    
+    // Update lead
+    lead.status = status;
+    
+    if (assignedTo) {
+      // Verify the assigned employee is under this manager
+      if (!employeeIds.includes(assignedTo)) {
+        return res.status(400).json({ error: 'Can only assign to employees under your management' });
+      }
+      lead.assignedTo = assignedTo;
+    }
+    
+    // Handle status-specific logic
+    if (status === 'Follow-up') {
+      if (!followUpDate) {
+        return res.status(400).json({ error: 'Follow-up date is required for Follow-up status' });
+      }
+      lead.followUpDate = new Date(followUpDate);
+      lead.reassignmentDate = undefined;
+    } else if (status === 'Won') {
+      if (!sellingPrice) {
+        return res.status(400).json({ error: 'Selling price is required for Won status' });
+      }
+      lead.sellingPrice = sellingPrice;
+      lead.followUpDate = undefined;
+      lead.reassignmentDate = undefined;
+    } else if (status === 'Lost') {
+      if (!lossReason) {
+        return res.status(400).json({ error: 'Loss reason is required for Lost status' });
+      }
+      lead.lossReason = lossReason;
+      lead.followUpDate = undefined;
+      // Set reassignment date to 2 weeks from now
+      lead.reassignmentDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+    } else {
+      // Clear all special fields for other statuses
+      lead.followUpDate = undefined;
+      lead.reassignmentDate = undefined;
+      lead.sellingPrice = undefined;
+      lead.lossReason = undefined;
+    }
+    
     await lead.save();
-    const populated = await Lead.findById(lead._id).populate('createdBy', 'name email');
-    res.status(201).json({ message: 'Lead created', lead: populated });
-  } catch (err) {
-    console.error('createLead error', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-exports.updateLead = async (req, res) => {
-  try {
-    const leadId = req.params.id;
-    if (!mongoose.Types.ObjectId.isValid(leadId)) return res.status(400).json({ message: 'Invalid lead id' });
-
-    const updateFields = {};
-    const { name, phone, email, status, notes, assignedTo } = req.body;
-    if (name) updateFields.name = name;
-    if (phone) updateFields.phone = phone;
-    if (email) updateFields.email = email;
-    if (status) updateFields.status = status;
-    if (notes) updateFields.notes = notes; // replace; clients can append as needed
-    if (assignedTo && mongoose.Types.ObjectId.isValid(assignedTo)) updateFields.assignedTo = assignedTo;
-
-    const updated = await Lead.findByIdAndUpdate(leadId, updateFields, { new: true })
+    
+    const updated = await Lead.findById(leadId)
+      .select('name phone email status notes followUpDate assignedTo createdBy sellingPrice lossReason reassignmentDate createdAt')
       .populate('assignedTo', 'name email')
       .populate('createdBy', 'name email');
-
-    if (!updated) return res.status(404).json({ message: 'Lead not found' });
-    res.json({ message: 'Lead updated', lead: updated });
+    
+    res.json({ message: 'Lead status updated', lead: updated });
   } catch (err) {
-    console.error('updateLead error', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('updateLeadStatus error:', err);
+    res.status(500).json({ error: 'Failed to update lead status', details: err.message });
   }
 };
 
-exports.deleteLead = async (req, res) => {
+// POST /api/manager/reassign-leads
+// Reassign leads that need reassignment (hot leads after 2 weeks, lost leads after 2 weeks)
+exports.reassignLeads = async (req, res) => {
   try {
-    const id = req.params.id;
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid lead id' });
-
-    const lead = await Lead.findByIdAndDelete(id);
-    if (!lead) return res.status(404).json({ message: 'Lead not found' });
-    res.json({ message: 'Lead deleted' });
+    const managerId = req.user._id;
+    
+    // Get all employees under this manager
+    const employees = await User.find({ manager: managerId }).select('_id');
+    if (employees.length === 0) {
+      return res.status(400).json({ error: 'No employees found under your management' });
+    }
+    
+    // Get leads that need reassignment
+    const leadsToReassign = await Lead.find({
+      $and: [
+        {
+          $or: [
+            {
+              status: 'Hot',
+              reassignmentDate: { $lte: new Date() }
+            },
+            {
+              status: 'Lost',
+              reassignmentDate: { $lte: new Date() }
+            }
+          ]
+        },
+        {
+          $or: [
+            { createdBy: managerId },
+            { assignedTo: { $in: employees.map(e => e._id) } }
+          ]
+        }
+      ]
+    });
+    
+    if (leadsToReassign.length === 0) {
+      return res.json({ message: 'No leads need reassignment' });
+    }
+    
+    // Reassign leads to different employees
+    const reassignedLeads = [];
+    for (const lead of leadsToReassign) {
+      // Find a different employee to assign to
+      const currentEmployeeId = lead.assignedTo;
+      const availableEmployees = employees.filter(e => e._id.toString() !== currentEmployeeId.toString());
+      
+      if (availableEmployees.length > 0) {
+        // Randomly select a new employee
+        const randomIndex = Math.floor(Math.random() * availableEmployees.length);
+        const newEmployee = availableEmployees[randomIndex];
+        
+        // Track previous assignment
+        if (!lead.previousAssignments) lead.previousAssignments = [];
+        lead.previousAssignments.push({
+          employee: lead.assignedTo,
+          assignedAt: new Date(),
+          status: lead.status
+        });
+        
+        // Update assignment
+        lead.assignedTo = newEmployee._id;
+        lead.reassignmentDate = undefined; // Clear reassignment date
+        
+        await lead.save();
+        reassignedLeads.push(lead);
+      }
+    }
+    
+    res.json({ 
+      message: `${reassignedLeads.length} leads reassigned`, 
+      reassignedLeads: reassignedLeads.length 
+    });
   } catch (err) {
-    console.error('deleteLead error', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('reassignLeads error:', err);
+    res.status(500).json({ error: 'Failed to reassign leads', details: err.message });
   }
+};
+
+// GET /api/manager/employees
+// Get all employees under the manager
+exports.getManagerEmployees = async (req, res) => {
+  try {
+    const managerId = req.user._id;
+    
+    const employees = await User.find({ manager: managerId })
+      .select('name email role createdAt')
+      .sort({ name: 1 });
+    
+    res.json(employees);
+  } catch (err) {
+    console.error('getManagerEmployees error:', err);
+    res.status(500).json({ error: 'Failed to fetch employees', details: err.message });
+  }
+};
+
+module.exports = {
+  getManagerLeads: exports.getManagerLeads,
+  getLeadsByStatus: exports.getLeadsByStatus,
+  getManagerDashboard: exports.getManagerDashboard,
+  updateLeadStatus: exports.updateLeadStatus,
+  reassignLeads: exports.reassignLeads,
+  getManagerEmployees: exports.getManagerEmployees
 };

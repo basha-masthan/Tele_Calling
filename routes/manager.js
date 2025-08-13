@@ -1,38 +1,53 @@
 // routes/manager.js
 const express = require('express');
 const router = express.Router();
+const managerController = require('../controllers/managerController');
 const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
-const managerCtrl = require('../controllers/managerController');
+const Lead = require('../models/Lead');
 
-// All manager routes require auth and manager role (admins can reuse manager role if desired)
-router.use(auth, roles('manager'));
 
-// Employees under this manager
-router.get('/employees', managerCtrl.getEmployees);
+// All routes require authentication and manager role
+router.use(auth);
+router.use(roles(['manager', 'admin']));
 
-// Leads related to this manager (created by manager or assigned to their employees)
-router.get('/leads', managerCtrl.getMyLeads);
+// Get all leads under the manager
+router.get('/leads', managerController.getManagerLeads);
 
-// Single lead details
-router.get('/lead/:id', managerCtrl.getLeadById);
+// Get leads by specific status
+router.get('/leads/status/:status', managerController.getLeadsByStatus);
 
-// Leads assigned to a particular employee (employee must belong to this manager)
-router.get('/employee/:id/leads', managerCtrl.getEmployeeLeads);
+// Get manager dashboard
+router.get('/dashboard', managerController.getManagerDashboard);
 
-// Team call logs (for employees under this manager)
-router.get('/team-call-logs', managerCtrl.getTeamCallLogs);
-    
-// Assign a lead to an employee
-router.post('/assign-lead', managerCtrl.assignLead);
+// Update lead status and assignment
+router.put('/update-lead-status', managerController.updateLeadStatus);
 
-// Create a lead
-router.post('/create-lead', managerCtrl.createLead);
+// Reassign leads that need reassignment
+router.post('/reassign-leads', managerController.reassignLeads);
 
-// Update a lead (manager-level update)
-router.put('/lead/:id', managerCtrl.updateLead);
+// Get employees under the manager
+router.get('/employees', managerController.getManagerEmployees);
 
-// Delete a lead
-router.delete('/lead/:id', managerCtrl.deleteLead);
+router.post('/create-lead', async (req, res) => {
+    const { name, phone, email, notes, assignedTo, createdBy } = req.body;
+
+    try {
+        const lead = new Lead({
+            name,
+            phone,
+            email,
+            notes,
+            assignedTo,
+            createdBy
+        });
+
+        await lead.save();
+        res.json({ message: 'Lead added successfully', lead });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 
 module.exports = router;

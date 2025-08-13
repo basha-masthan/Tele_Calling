@@ -25,6 +25,12 @@ exports.getMyLeads = async (req, res) => {
 exports.updateLeadNotes = async (req, res) => {
   try {
     const { leadId, note, status, followUpDate } = req.body;
+    
+    // Handle empty string followUpDate
+    const cleanFollowUpDate = followUpDate && followUpDate.trim() !== '' ? followUpDate : undefined;
+    
+    console.log('Updating lead:', { leadId, note: note ? 'provided' : 'not provided', status, followUpDate: cleanFollowUpDate });
+    
     if (!leadId) return res.status(400).json({ error: 'leadId required' });
 
     const lead = await Lead.findById(leadId);
@@ -37,16 +43,84 @@ exports.updateLeadNotes = async (req, res) => {
 
     // push a note if provided
     if (note) {
-      if (!lead.notes) lead.notes = [];
-      lead.notes.push({ note, addedBy: req.user._id });
+      // Since notes is a string field, we'll append the new note with a separator
+      if (lead.notes) {
+        lead.notes = lead.notes + '\n\n' + note;
+      } else {
+        lead.notes = note;
+      }
     }
 
-    if (status) lead.status = status;
-    if (followUpDate) lead.followUpDate = new Date(followUpDate);
+    // Handle status change and follow-up date logic
+    if (status) {
+      // Track previous assignment before changing status
+      if (lead.assignedTo && String(lead.assignedTo) !== String(req.user._id)) {
+        if (!lead.previousAssignments) lead.previousAssignments = [];
+        lead.previousAssignments.push({
+          employee: lead.assignedTo,
+          assignedAt: new Date(),
+          status: lead.status
+        });
+      }
+      
+      lead.status = status;
+      
+      // If status is changing to "Follow-up", require followUpDate
+      if (status === 'Follow-up') {
+        if (!cleanFollowUpDate) {
+          return res.status(400).json({ error: 'Follow-up date is required when status is set to Follow-up' });
+        }
+        
+        // Validate that follow-up date is not in the past
+        const selectedDate = new Date(cleanFollowUpDate);
+        if (isNaN(selectedDate.getTime())) {
+          return res.status(400).json({ error: 'Invalid follow-up date format' });
+        }
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+          return res.status(400).json({ error: 'Follow-up date cannot be in the past' });
+        }
+        
+        lead.followUpDate = new Date(cleanFollowUpDate);
+      } else if (status === 'Hot') {
+        // When status changes to Hot, clear follow-up date and set reassignment date to 2 weeks from now
+        lead.followUpDate = undefined;
+        lead.reassignmentDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 2 weeks from now
+      } else {
+        // If status is changing to something other than "Follow-up" or "Hot", clear the followUpDate
+        lead.followUpDate = undefined;
+        lead.reassignmentDate = undefined;
+      }
+    } else if (cleanFollowUpDate) {
+      // If only followUpDate is provided (without status change), 
+      // only allow it if the current status is "Follow-up"
+      if (lead.status === 'Follow-up') {
+        // Validate that follow-up date is not in the past
+        const selectedDate = new Date(cleanFollowUpDate);
+        if (isNaN(selectedDate.getTime())) {
+          return res.status(400).json({ error: 'Invalid follow-up date format' });
+        }
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+          return res.status(400).json({ error: 'Follow-up date cannot be in the past' });
+        }
+        
+        lead.followUpDate = new Date(cleanFollowUpDate);
+      } else {
+        return res.status(400).json({ error: 'Can only set follow-up date when status is Follow-up' });
+      }
+    }
 
     await lead.save();
     // Return the updated lead (selecting important fields)
     const updated = await Lead.findById(leadId).select('name phone email status notes followUpDate createdAt').populate('createdBy', 'name');
+    console.log('Lead updated successfully:', { id: updated._id, status: updated.status, followUpDate: updated.followUpDate });
     res.json({ message: 'Lead updated', lead: updated });
   } catch (err) {
     console.error('updateLeadNotes error:', err);

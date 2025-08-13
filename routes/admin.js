@@ -3,6 +3,12 @@ const router = express.Router();
 const User = require('../models/User');
 const Lead = require('../models/Lead'); // Make sure you have a Lead model
 const AdminController = require('../controllers/adminController');
+const auth = require('../middleware/auth');
+const roles = require('../middleware/roles');
+
+// All admin routes require authentication and admin role
+router.use(auth);
+router.use(roles(['admin']));
 
 // Get all managers
 router.get('/managers', async (req, res) => {
@@ -35,6 +41,5 @@ router.get('/leads', async (req, res) => {
 });
 
 router.post('/assign-employee', AdminController.assignEmployee);
-
 
 module.exports = router;

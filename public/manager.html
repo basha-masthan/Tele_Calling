@@ -471,55 +471,468 @@
     color: #374151;
   }
 
-  /* Responsive design */
-  @media (max-width: 768px) {
-    .container {
-      padding: 20px 15px;
+      /* Responsive design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px 15px;
+      }
+      
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+      }
+      
+      .card {
+        padding: 20px;
+      }
+      
+      .modal-content {
+        padding: 25px;
+        margin: 10px;
+      }
+      
+      header {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      
+      .header-actions {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .lead-actions,
+      .campaign-actions {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+      }
+      
+      .lead-tabs,
+      .campaign-tabs {
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 0 20px;
+      }
+      
+      .tab-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        flex: 1;
+        min-width: 80px;
+      }
+      
+      .analytics-tabs {
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 0 20px;
+      }
+      
+      .analytics-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      
+      .variant-comparison,
+      .insights-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      
+      .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      
+      .chart-container {
+        height: 250px;
+      }
+      
+      .chart-container.small {
+        height: 180px;
+      }
+      
+      table {
+        font-size: 12px;
+      }
+      
+      th, td {
+        padding: 12px 8px;
+      }
+      
+      .table-actions {
+        flex-direction: column;
+        gap: 4px;
+      }
     }
-    
-    .dashboard-grid {
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-    
-    .stats-grid {
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 15px;
-    }
-    
-    .card {
-      padding: 20px;
-    }
-    
-    .modal-content {
-      padding: 25px;
-      margin: 10px;
-    }
-    
-    header {
-      padding: 15px 20px;
-      flex-direction: column;
-      gap: 15px;
-      text-align: center;
-    }
-    
-    .header-actions {
-      width: 100%;
-      justify-content: center;
-    }
-    
-    table {
-      font-size: 12px;
-    }
-    
-    th, td {
-      padding: 12px 8px;
-    }
-    
-    .table-actions {
-      flex-direction: column;
-      gap: 4px;
-    }
+
+  /* Lead Tabs */
+  .lead-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .lead-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 0 30px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+  }
+
+  .tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 12px 12px 0 0;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+
+  .tab-btn:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+  }
+
+  .tab-btn.active {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+  }
+
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+  }
+
+  /* Import Modal Styles */
+  .import-instructions {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+  }
+
+  .import-instructions ul {
+    margin: 10px 0;
+    padding-left: 20px;
+  }
+
+  .import-instructions li {
+    margin: 5px 0;
+    color: #374151;
+  }
+
+  .import-instructions a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .import-instructions a:hover {
+    text-decoration: underline;
+  }
+
+  .file-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #6b7280;
+  }
+
+  .file-info.success {
+    background: #d1fae5;
+    color: #059669;
+  }
+
+  .file-info.error {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  #previewTable {
+    font-size: 12px;
+  }
+
+  #previewTable th,
+  #previewTable td {
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+
+  /* Campaign Management Styles */
+  .campaign-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .campaign-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 0 30px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+  }
+
+  .filter-options,
+  .ab-testing-options,
+  .notification-options {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+  }
+
+  /* Analytics Styles */
+  .analytics-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 0 30px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+  }
+
+  .analytics-content {
+    display: none;
+    padding: 20px 0;
+  }
+
+  .analytics-content.active {
+    display: block;
+  }
+
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .metric-card {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+  }
+
+  .metric-card h4 {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #667eea;
+  }
+
+  .chart-container {
+    height: 300px;
+    margin: 20px 0;
+    position: relative;
+  }
+
+  .chart-container.small {
+    height: 200px;
+  }
+
+  .chart-section {
+    margin-bottom: 30px;
+  }
+
+  .chart-section h4,
+  .chart-section h5 {
+    color: #374151;
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6b7280;
+  }
+
+  .legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+  }
+
+  .ab-test-results {
+    padding: 20px 0;
+  }
+
+  .variant-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .variant {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+  }
+
+  .variant h5 {
+    color: #374151;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .insight-card {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+  }
+
+  .insight-card h5 {
+    color: #374151;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+  }
+
+  .stat-item:last-child {
+    border-bottom: none;
+  }
+
+  .stat-label {
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  .stat-value {
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .interest-item,
+  .engagement-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+  }
+
+  .interest-item:last-child,
+  .engagement-item:last-child {
+    border-bottom: none;
+  }
+
+  .interest-name,
+  .engagement-metric {
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  .interest-score,
+  .engagement-value {
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .performance-indicator {
+    text-align: center;
+  }
+
+  .performance-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #667eea;
+    display: block;
+  }
+
+  .performance-indicator small {
+    color: #6b7280;
+    font-size: 12px;
   }
 
   /* Additional animations */
@@ -573,38 +986,52 @@
     </div>
   </header>
 
-  <div class="container">
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-users"></i>
+      <div class="container">
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-number" id="totalEmployees">0</div>
+          <div class="stat-label">Total Employees</div>
         </div>
-        <div class="stat-number" id="totalEmployees">0</div>
-        <div class="stat-label">Total Employees</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-user-tie"></i>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <div class="stat-number" id="totalLeads">0</div>
+          <div class="stat-label">Total Leads</div>
         </div>
-        <div class="stat-number" id="totalLeads">0</div>
-        <div class="stat-label">Total Leads</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-phone"></i>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-phone"></i>
+          </div>
+          <div class="stat-number" id="totalCalls">0</div>
+          <div class="stat-label">Total Calls</div>
         </div>
-        <div class="stat-number" id="totalCalls">0</div>
-        <div class="stat-label">Total Calls</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-chart-line"></i>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="stat-number" id="conversionRate">0%</div>
+          <div class="stat-label">Conversion Rate</div>
         </div>
-        <div class="stat-number" id="conversionRate">0%</div>
-        <div class="stat-label">Conversion Rate</div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-fire"></i>
+          </div>
+          <div class="stat-number" id="hotLeads">0</div>
+          <div class="stat-label">Hot Leads</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="stat-number" id="totalSales">$0</div>
+          <div class="stat-label">Total Sales</div>
+        </div>
       </div>
-    </div>
 
     <div class="dashboard-grid">
       <!-- Employees Section -->
@@ -657,19 +1084,100 @@
       </div>
     </div>
 
-    <!-- Leads Section -->
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <h3 class="card-title">
-            <i class="fas fa-user-tie"></i> Lead Management
-          </h3>
-          <div class="card-subtitle">Manage and assign leads to your team</div>
+          <!-- Campaign Management Section -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">
+              <i class="fas fa-bullhorn"></i> Campaign Management
+            </h3>
+            <div class="card-subtitle">Create, manage, and analyze marketing campaigns with A/B testing</div>
+          </div>
+          <div class="campaign-actions">
+            <button class="btn btn-primary" id="createCampaignBtn">
+              <i class="fas fa-plus"></i> Create Campaign
+            </button>
+            <button class="btn btn-secondary" id="viewAnalyticsBtn">
+              <i class="fas fa-chart-bar"></i> View Analytics
+            </button>
+          </div>
         </div>
-        <button class="btn btn-primary" id="openCreateLeadBtn">
-          <i class="fas fa-plus"></i> Create Lead
+        
+        <!-- Campaign Tabs -->
+        <div class="campaign-tabs">
+          <button class="tab-btn active" data-tab="active">
+            <i class="fas fa-play-circle"></i> Active Campaigns
+          </button>
+          <button class="tab-btn" data-tab="draft">
+            <i class="fas fa-edit"></i> Draft Campaigns
+          </button>
+          <button class="tab-btn" data-tab="completed">
+            <i class="fas fa-check-circle"></i> Completed
+          </button>
+          <button class="tab-btn" data-tab="ab-testing">
+            <i class="fas fa-flask"></i> A/B Testing
+          </button>
+        </div>
+        
+        <div class="table-container">
+          <table id="campaignsTable">
+            <thead>
+              <tr>
+                <th><i class="fas fa-bullhorn"></i> Campaign Name</th>
+                <th><i class="fas fa-calendar"></i> Start Date</th>
+                <th><i class="fas fa-calendar-check"></i> End Date</th>
+                <th><i class="fas fa-users"></i> Target Audience</th>
+                <th><i class="fas fa-flag"></i> Status</th>
+                <th><i class="fas fa-chart-line"></i> Performance</th>
+                <th><i class="fas fa-cog"></i> Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Leads Section with Tabs -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">
+              <i class="fas fa-user-tie"></i> Lead Management
+            </h3>
+            <div class="card-subtitle">Manage and assign leads to your team</div>
+          </div>
+          <div class="lead-actions">
+            <button class="btn btn-primary" id="openCreateLeadBtn">
+              <i class="fas fa-plus"></i> Create Lead
+            </button>
+            <button class="btn btn-secondary" id="importLeadsBtn">
+              <i class="fas fa-file-excel"></i> Import Excel
+            </button>
+            <button class="btn btn-secondary" id="exportLeadsBtn">
+              <i class="fas fa-download"></i> Export Excel
+            </button>
+          </div>
+        </div>
+      
+      <!-- Lead Tabs -->
+      <div class="lead-tabs">
+        <button class="tab-btn active" data-tab="all">
+          <i class="fas fa-list"></i> All Leads
+        </button>
+        <button class="tab-btn" data-tab="hot">
+          <i class="fas fa-fire"></i> Hot Leads
+        </button>
+        <button class="tab-btn" data-tab="follow-up">
+          <i class="fas fa-clock"></i> Follow-up
+        </button>
+        <button class="tab-btn" data-tab="converted">
+          <i class="fas fa-check-circle"></i> Converted
+        </button>
+        <button class="tab-btn" data-tab="lost">
+          <i class="fas fa-times-circle"></i> Lost
         </button>
       </div>
+      
       <div class="table-container">
         <table id="leadsTable">
           <thead>
@@ -679,6 +1187,7 @@
               <th><i class="fas fa-envelope"></i> Email</th>
               <th><i class="fas fa-flag"></i> Status</th>
               <th><i class="fas fa-user-check"></i> Assigned To</th>
+              <th><i class="fas fa-calendar"></i> Follow-up Date</th>
               <th><i class="fas fa-cog"></i> Actions</th>
             </tr>
           </thead>
@@ -743,7 +1252,326 @@
     </div>
   </div>
 
-  <!-- Lead Details Modal -->
+  <!-- Create Campaign Modal -->
+  <div class="modal" id="createCampaignModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-bullhorn"></i> Create New Campaign</h3>
+        <div class="modal-subtitle">Set up a new marketing campaign with targeting and A/B testing options</div>
+      </div>
+      
+      <form id="campaignForm">
+        <div class="form-group">
+          <label><i class="fas fa-tag"></i> Campaign Name</label>
+          <input type="text" id="campaignName" placeholder="Enter campaign name" required />
+        </div>
+        
+        <div class="form-group">
+          <label><i class="fas fa-align-left"></i> Description</label>
+          <textarea id="campaignDescription" placeholder="Describe your campaign goals and strategy" rows="3"></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fas fa-calendar"></i> Start Date</label>
+            <input type="date" id="campaignStartDate" required />
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-calendar-check"></i> End Date</label>
+            <input type="date" id="campaignEndDate" required />
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label><i class="fas fa-users"></i> Target Audience</label>
+          <select id="targetAudience" required>
+            <option value="">Select target audience</option>
+            <option value="all">All Leads</option>
+            <option value="new">New Leads</option>
+            <option value="hot">Hot Leads</option>
+            <option value="follow-up">Follow-up Leads</option>
+            <option value="custom">Custom Filter</option>
+          </select>
+        </div>
+        
+        <div class="form-group" id="customFilterGroup" style="display: none;">
+          <label><i class="fas fa-filter"></i> Custom Filters</label>
+          <div class="filter-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterByStatus" /> Filter by Status
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterByDate" /> Filter by Date Range
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterByEmployee" /> Filter by Assigned Employee
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label><i class="fas fa-flask"></i> A/B Testing</label>
+          <div class="ab-testing-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="enableABTesting" /> Enable A/B Testing
+            </label>
+            <div id="abTestingConfig" style="display: none;">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Variant A Name</label>
+                  <input type="text" id="variantAName" placeholder="e.g., Original Message" />
+                </div>
+                <div class="form-group">
+                  <label>Variant B Name</label>
+                  <input type="text" id="variantBName" placeholder="e.g., New Message" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Test Duration (days)</label>
+                <input type="number" id="testDuration" min="1" max="30" value="7" />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label><i class="fas fa-bullseye"></i> Campaign Type</label>
+          <select id="campaignType" required>
+            <option value="">Select campaign type</option>
+            <option value="email">Email Campaign</option>
+            <option value="sms">SMS Campaign</option>
+            <option value="social">Social Media</option>
+            <option value="phone">Phone Campaign</option>
+            <option value="multi">Multi-Channel</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label><i class="fas fa-budget"></i> Budget (Optional)</label>
+          <input type="number" id="campaignBudget" placeholder="Enter budget amount" min="0" step="0.01" />
+        </div>
+        
+        <div class="form-group">
+          <label><i class="fas fa-bell"></i> Notifications</label>
+          <div class="notification-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="emailNotifications" checked /> Email notifications
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="smsNotifications" /> SMS notifications
+            </label>
+          </div>
+        </div>
+      </form>
+      
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="campaignCancel">Cancel</button>
+        <button class="btn btn-primary" id="campaignSave">
+          <i class="fas fa-save"></i> Create Campaign
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Campaign Analytics Modal -->
+  <div class="modal" id="analyticsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-chart-bar"></i> Campaign Analytics</h3>
+        <div class="modal-subtitle">Comprehensive performance metrics and insights</div>
+      </div>
+      
+      <div class="analytics-tabs">
+        <button class="tab-btn active" data-tab="overview">Overview</button>
+        <button class="tab-btn" data-tab="performance">Performance</button>
+        <button class="tab-btn" data-tab="ab-testing">A/B Testing</button>
+        <button class="tab-btn" data-tab="audience">Audience</button>
+      </div>
+      
+      <div id="overview-tab" class="analytics-content active">
+        <div class="analytics-grid">
+          <div class="metric-card">
+            <h4>Total Reach</h4>
+            <div class="metric-value" id="totalReach">0</div>
+          </div>
+          <div class="metric-card">
+            <h4>Engagement Rate</h4>
+            <div class="metric-value" id="engagementRate">0%</div>
+          </div>
+          <div class="metric-card">
+            <h4>Conversion Rate</h4>
+            <div class="metric-value" id="conversionRate">0%</div>
+          </div>
+          <div class="metric-card">
+            <h4>ROI</h4>
+            <div class="metric-value" id="roi">0%</div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="performance-tab" class="analytics-content">
+        <div class="chart-section">
+          <h4>Performance Over Time</h4>
+          <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="chart-section">
+          <h4>Engagement Metrics</h4>
+          <div class="metrics-grid">
+            <div class="chart-container small">
+              <canvas id="engagementChart"></canvas>
+            </div>
+            <div class="chart-container small">
+              <canvas id="conversionChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="ab-testing-tab" class="analytics-content">
+        <div class="ab-test-results">
+          <h4>A/B Test Results</h4>
+          
+          <div class="chart-section">
+            <h5>Performance Comparison</h5>
+            <div class="chart-container">
+              <canvas id="abTestChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="variant-comparison">
+            <div class="variant" id="variantA">
+              <h5>Variant A</h5>
+              <div class="variant-stats"></div>
+            </div>
+            <div class="variant" id="variantB">
+              <h5>Variant B</h5>
+              <div class="variant-stats"></div>
+            </div>
+          </div>
+          
+          <div class="chart-section">
+            <h5>Statistical Significance</h5>
+            <div class="chart-container small">
+              <canvas id="significanceChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="audience-tab" class="analytics-content">
+        <div class="audience-insights">
+          <h4>Audience Insights</h4>
+          
+          <div class="chart-section">
+            <h5>Demographics Distribution</h5>
+            <div class="chart-container">
+              <canvas id="demographicsChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="chart-section">
+            <h5>Geographic Distribution</h5>
+            <div class="chart-container">
+              <canvas id="geographicChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="chart-section">
+            <h5>Behavior Patterns</h5>
+            <div class="chart-container">
+              <canvas id="behaviorChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="insights-grid">
+            <div class="insight-card">
+              <h5>Top Interests</h5>
+              <div class="insight-content" id="interestsContent"></div>
+            </div>
+            <div class="insight-card">
+              <h5>Engagement Patterns</h5>
+              <div class="insight-content" id="engagementContent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="analyticsClose">Close</button>
+        <button class="btn btn-primary" id="exportAnalytics">
+          <i class="fas fa-download"></i> Export Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Excel Modal -->
+  <div class="modal" id="importModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-file-excel"></i> Import Leads from Excel</h3>
+        <div class="modal-subtitle">Upload an Excel file to import multiple leads at once</div>
+      </div>
+      
+      <div class="form-group">
+        <label><i class="fas fa-info-circle"></i> Instructions</label>
+        <div class="import-instructions">
+          <p>Your Excel file should have the following columns:</p>
+          <ul>
+            <li><strong>Name</strong> (required) - Lead's full name</li>
+            <li><strong>Phone</strong> (required) - Contact phone number</li>
+            <li><strong>Email</strong> (optional) - Email address</li>
+            <li><strong>Notes</strong> (optional) - Additional notes</li>
+            <li><strong>Status</strong> (optional) - Lead status (New, Hot, Follow-up, etc.)</li>
+          </ul>
+          <p><a href="#" id="downloadTemplate">Download Excel Template</a></p>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label><i class="fas fa-file-upload"></i> Select Excel File</label>
+        <input type="file" id="excelFile" accept=".xlsx,.xls" />
+        <div class="file-info" id="fileInfo"></div>
+      </div>
+      
+      <div class="form-group" id="previewSection" style="display: none;">
+        <label><i class="fas fa-eye"></i> Preview (First 5 rows)</label>
+        <div class="table-container">
+          <table id="previewTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Notes</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label><i class="fas fa-user-check"></i> Assign All Leads To</label>
+        <select id="bulkAssignEmployee">
+          <option value="">-- Select employee --</option>
+        </select>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="importCancel">Cancel</button>
+        <button class="btn btn-primary" id="importConfirm" disabled>
+          <i class="fas fa-upload"></i> Import Leads
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Lead Details Modal -->
   <div class="modal" id="leadModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -752,12 +1580,31 @@
       </div>
       <div class="form-group">
         <label><i class="fas fa-flag"></i> Status</label>
-        <select id="leadStatus">
+        <select id="leadStatus" onchange="toggleStatusFields()">
           <option value="New">New</option>
+          <option value="Hot">Hot</option>
           <option value="Follow-up">Follow-up</option>
           <option value="Converted">Converted</option>
           <option value="Lost">Lost</option>
         </select>
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-user-check"></i> Assign To</label>
+        <select id="leadAssignedTo">
+          <option value="">Loading employees...</option>
+        </select>
+      </div>
+      <div class="form-group" id="followUpDateGroup" style="display: none;">
+        <label><i class="fas fa-calendar"></i> Follow-up Date</label>
+        <input type="date" id="leadFollowUpDate">
+      </div>
+      <div class="form-group" id="sellingPriceGroup" style="display: none;">
+        <label><i class="fas fa-dollar-sign"></i> Selling Price ($)</label>
+        <input type="number" id="leadSellingPrice" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group" id="lossReasonGroup" style="display: none;">
+        <label><i class="fas fa-exclamation-triangle"></i> Loss Reason</label>
+        <textarea id="leadLossReason" placeholder="Why was this lead lost?"></textarea>
       </div>
       <div class="form-group">
         <label><i class="fas fa-sticky-note"></i> Notes</label>
@@ -776,6 +1623,11 @@
     </div>
   </div>
 
+  <!-- Excel.js and SheetJS libraries for Excel handling -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Chart.js for analytics and graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
   <script>
     // Enhanced notification system
     function showNotification(message, type = 'success') {
@@ -867,12 +1719,14 @@
     }
 
     // Enhanced employees loading
+    let employees = [];
+    
     async function loadEmployees() {
       setTableLoading('employeesTable', 3);
       try {
         const res = await fetch(ENDPOINTS.employees, { headers: authHeader() });
         if (!res.ok) await handleErrResponse(res);
-        const employees = await res.json();
+        employees = await res.json();
         
         document.getElementById('totalEmployees').textContent = employees.length;
         
@@ -915,7 +1769,10 @@
       }
     }
 
-    // Enhanced leads rendering
+    // Enhanced leads rendering with filtering
+    let currentTab = 'all';
+    let allLeads = [];
+
     function renderLeadsTable(leads) {
       if (!leads || !leads.length) { 
         setTableEmpty('leadsTable', 'No leads found'); 
@@ -923,14 +1780,22 @@
         return; 
       }
       
+      allLeads = leads;
       document.getElementById('totalLeads').textContent = leads.length;
+      
+      // Update stats
+      updateLeadStats(leads);
+      
+      // Filter leads based on current tab
+      const filteredLeads = filterLeadsByTab(leads, currentTab);
       
       const tbody = document.querySelector('#leadsTable tbody');
       tbody.innerHTML = '';
       
-      leads.forEach((lead, index) => {
+      filteredLeads.forEach((lead, index) => {
         const assigned = lead.assignedTo ? lead.assignedTo.name : 'Unassigned';
         const statusClass = `status-${lead.status?.toLowerCase().replace('-', '-') || 'new'}`;
+        const followUpDate = lead.followUpDate ? new Date(lead.followUpDate).toLocaleDateString() : '-';
         
         const tr = document.createElement('tr');
         tr.className = 'fade-in';
@@ -941,6 +1806,7 @@
           <td>${lead.email || '-'}</td>
           <td><span class="status-badge ${statusClass}">${lead.status || 'New'}</span></td>
           <td>${assigned}</td>
+          <td>${followUpDate}</td>
           <td>
             <div class="table-actions">
               <button class="btn btn-sm btn-primary" data-action="assign" data-id="${lead._id}">
@@ -969,6 +1835,30 @@
           if (action === 'delete') deleteLead(id);
         });
       });
+    }
+
+    function filterLeadsByTab(leads, tab) {
+      switch(tab) {
+        case 'hot':
+          return leads.filter(lead => lead.status === 'Hot');
+        case 'follow-up':
+          return leads.filter(lead => lead.status === 'Follow-up');
+        case 'converted':
+          return leads.filter(lead => lead.status === 'Converted');
+        case 'lost':
+          return leads.filter(lead => lead.status === 'Lost');
+        default:
+          return leads;
+      }
+    }
+
+    function updateLeadStats(leads) {
+      const hotLeads = leads.filter(lead => lead.status === 'Hot').length;
+      const convertedLeads = leads.filter(lead => lead.status === 'Converted');
+      const totalSales = convertedLeads.reduce((sum, lead) => sum + (lead.sellingPrice || 0), 0);
+      
+      document.getElementById('hotLeads').textContent = hotLeads;
+      document.getElementById('totalSales').textContent = `$${totalSales.toLocaleString()}`;
     }
 
     async function loadMyLeads() {
@@ -1116,7 +2006,7 @@
       }
     });
 
-    // Enhanced lead modal
+    // Enhanced lead modal with status fields
     async function openLeadModal(leadId) {
       try {
         const res = await fetch(`${ENDPOINTS.leadById}/${leadId}`, { headers: authHeader() });
@@ -1129,7 +2019,7 @@
         // Status select
         const statusSel = document.getElementById('leadStatus');
         statusSel.innerHTML = '';
-        ['New', 'Follow-up', 'Converted', 'Lost'].forEach(s => {
+        ['New', 'Hot', 'Follow-up', 'Converted', 'Lost'].forEach(s => {
           const option = document.createElement('option');
           option.value = s;
           option.textContent = s;
@@ -1137,7 +2027,24 @@
           statusSel.appendChild(option);
         });
         
+        // Assign to select
+        const assignSel = document.getElementById('leadAssignedTo');
+        assignSel.innerHTML = '<option value="">-- Select employee --</option>';
+        if (employees && employees.length) {
+          employees.forEach(emp => {
+            const option = document.createElement('option');
+            option.value = emp._id;
+            option.textContent = emp.name;
+            option.selected = emp._id === (lead.assignedTo?._id || '');
+            assignSel.appendChild(option);
+          });
+        }
+        
+        // Set other fields
         document.getElementById('leadNotes').value = lead.notes || '';
+        document.getElementById('leadFollowUpDate').value = lead.followUpDate ? new Date(lead.followUpDate).toISOString().split('T')[0] : '';
+        document.getElementById('leadSellingPrice').value = lead.sellingPrice || '';
+        document.getElementById('leadLossReason').value = lead.lossReason || '';
 
         // Recording
         const rc = document.getElementById('recordingContainer');
@@ -1149,8 +2056,28 @@
 
         document.getElementById('leadModal').dataset.leadId = lead._id;
         showModal('leadModal');
+        toggleStatusFields();
       } catch (err) {
         showNotification('Failed to load lead: ' + err.message, 'error');
+      }
+    }
+
+    // Toggle status-specific fields
+    function toggleStatusFields() {
+      const status = document.getElementById('leadStatus').value;
+      
+      // Hide all optional fields first
+      document.getElementById('followUpDateGroup').style.display = 'none';
+      document.getElementById('sellingPriceGroup').style.display = 'none';
+      document.getElementById('lossReasonGroup').style.display = 'none';
+      
+      // Show relevant fields based on status
+      if (status === 'Follow-up') {
+        document.getElementById('followUpDateGroup').style.display = 'block';
+      } else if (status === 'Converted') {
+        document.getElementById('sellingPriceGroup').style.display = 'block';
+      } else if (status === 'Lost') {
+        document.getElementById('lossReasonGroup').style.display = 'block';
       }
     }
 
@@ -1159,12 +2086,25 @@
       const leadId = document.getElementById('leadModal').dataset.leadId;
       const status = document.getElementById('leadStatus').value;
       const notes = document.getElementById('leadNotes').value;
+      const assignedTo = document.getElementById('leadAssignedTo').value;
+      const followUpDate = document.getElementById('leadFollowUpDate').value;
+      const sellingPrice = document.getElementById('leadSellingPrice').value;
+      const lossReason = document.getElementById('leadLossReason').value;
       
       try {
+        const updateData = { 
+          status, 
+          notes, 
+          assignedTo,
+          followUpDate: followUpDate || undefined,
+          sellingPrice: sellingPrice || undefined,
+          lossReason: lossReason || undefined
+        };
+        
         const res = await fetch(`${ENDPOINTS.updateLead}/${leadId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', ...authHeader() },
-          body: JSON.stringify({ status, notes })
+          body: JSON.stringify(updateData)
         });
         if (!res.ok) await handleErrResponse(res);
         await res.json();
@@ -1203,6 +2143,125 @@
       showNotification('Data refreshed successfully!');
     });
 
+    // Import/Export event listeners
+    document.getElementById('importLeadsBtn').addEventListener('click', () => {
+      // Populate employee dropdown
+      const assignSelect = document.getElementById('bulkAssignEmployee');
+      assignSelect.innerHTML = '<option value="">-- Select employee --</option>';
+      if (employees && employees.length) {
+        employees.forEach(emp => {
+          const option = document.createElement('option');
+          option.value = emp._id;
+          option.textContent = emp.name;
+          assignSelect.appendChild(option);
+        });
+      }
+      showModal('importModal');
+    });
+
+    document.getElementById('exportLeadsBtn').addEventListener('click', exportLeadsToExcel);
+
+    document.getElementById('importCancel').addEventListener('click', () => {
+      hideModal('importModal');
+      // Reset form
+      document.getElementById('excelFile').value = '';
+      document.getElementById('fileInfo').textContent = '';
+      document.getElementById('previewSection').style.display = 'none';
+      document.getElementById('importConfirm').disabled = true;
+      excelData = null;
+    });
+
+    document.getElementById('importConfirm').addEventListener('click', importLeadsFromExcel);
+
+    document.getElementById('downloadTemplate').addEventListener('click', (e) => {
+      e.preventDefault();
+      downloadTemplate();
+    });
+
+    // File input change handler
+    document.getElementById('excelFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+            file.type === 'application/vnd.ms-excel') {
+          handleFileUpload(file);
+        } else {
+          showFileInfo('Please select a valid Excel file (.xlsx or .xls)', 'error');
+        }
+      }
+    });
+
+    // Campaign event listeners
+    document.getElementById('createCampaignBtn').addEventListener('click', () => {
+      // Set default dates
+      const today = new Date().toISOString().split('T')[0];
+      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      
+      document.getElementById('campaignStartDate').value = today;
+      document.getElementById('campaignEndDate').value = nextWeek;
+      
+      showModal('createCampaignModal');
+    });
+
+    document.getElementById('viewAnalyticsBtn').addEventListener('click', () => {
+      if (campaigns.length === 0) {
+        showNotification('No campaigns available for analytics', 'error');
+        return;
+      }
+      showModal('analyticsModal');
+    });
+
+    document.getElementById('campaignCancel').addEventListener('click', () => hideModal('createCampaignModal'));
+    document.getElementById('campaignSave').addEventListener('click', createCampaign);
+
+    // Campaign form interactions
+    document.getElementById('targetAudience').addEventListener('change', (e) => {
+      const customFilterGroup = document.getElementById('customFilterGroup');
+      if (e.target.value === 'custom') {
+        customFilterGroup.style.display = 'block';
+      } else {
+        customFilterGroup.style.display = 'none';
+      }
+    });
+
+    document.getElementById('enableABTesting').addEventListener('change', (e) => {
+      const abTestingConfig = document.getElementById('abTestingConfig');
+      if (e.target.checked) {
+        abTestingConfig.style.display = 'block';
+      } else {
+        abTestingConfig.style.display = 'none';
+      }
+    });
+
+    // Analytics modal event listeners
+    document.getElementById('analyticsClose').addEventListener('click', () => {
+      hideModal('analyticsModal');
+      // Clean up charts to prevent memory leaks
+      Object.values(chartInstances).forEach(chart => {
+        if (chart && typeof chart.destroy === 'function') {
+          chart.destroy();
+        }
+      });
+      chartInstances = {};
+    });
+    document.getElementById('exportAnalytics').addEventListener('click', () => {
+      if (selectedCampaign) {
+        exportCampaignReport(selectedCampaign);
+      }
+    });
+
+    // Analytics tab switching
+    document.querySelectorAll('.analytics-tabs .tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.analytics-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.analytics-content').forEach(c => c.classList.remove('active'));
+        
+        btn.classList.add('active');
+        const tabId = btn.dataset.tab;
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+      });
+    });
+
     document.getElementById('logoutBtn').addEventListener('click', () => {
       if (confirm('Are you sure you want to logout?')) {
         localStorage.removeItem('token');
@@ -1220,6 +2279,1067 @@
       }
     });
 
+    // Tab switching functionality
+    function setupTabSwitching() {
+      document.querySelectorAll('.lead-tabs .tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Remove active class from all tabs
+          document.querySelectorAll('.lead-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+          
+          // Add active class to clicked tab
+          btn.classList.add('active');
+          
+          // Update current tab and re-render
+          currentTab = btn.dataset.tab;
+          if (allLeads.length > 0) {
+            renderLeadsTable(allLeads);
+          }
+        });
+      });
+    }
+
+    // Campaign tab switching functionality
+    function setupCampaignTabSwitching() {
+      document.querySelectorAll('.campaign-tabs .tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Remove active class from all tabs
+          document.querySelectorAll('.campaign-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+          
+          // Add active class to clicked tab
+          btn.classList.add('active');
+          
+          // Update current campaign tab and re-render
+          currentCampaignTab = btn.dataset.tab;
+          if (campaigns.length > 0) {
+            renderCampaignsTable();
+          }
+        });
+      });
+    }
+
+    // Campaign Management functionality
+    let campaigns = [];
+    let currentCampaignTab = 'active';
+    let selectedCampaign = null;
+
+    // Excel Import/Export functionality
+    let excelData = null;
+
+    // Download Excel template
+    function downloadTemplate() {
+      const template = [
+        ['Name', 'Phone', 'Email', 'Notes', 'Status'],
+        ['John Doe', '+1234567890', 'john@example.com', 'Interested in product A', 'New'],
+        ['Jane Smith', '+1987654321', 'jane@example.com', 'Follow up needed', 'Hot'],
+        ['Bob Johnson', '+1122334455', 'bob@example.com', 'Previous customer', 'Follow-up']
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet(template);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Leads Template');
+      
+      // Save the file
+      XLSX.writeFile(wb, 'leads_template.xlsx');
+    }
+
+    // Handle Excel file upload
+    function handleFileUpload(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          
+          // Convert to JSON
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          if (jsonData.length < 2) {
+            showFileInfo('File must contain at least a header row and one data row', 'error');
+            return;
+          }
+
+          // Validate headers
+          const headers = jsonData[0];
+          const requiredHeaders = ['Name', 'Phone'];
+          const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+          
+          if (missingHeaders.length > 0) {
+            showFileInfo(`Missing required columns: ${missingHeaders.join(', ')}`, 'error');
+            return;
+          }
+
+          // Process data rows
+          const leads = [];
+          for (let i = 1; i < jsonData.length; i++) {
+            const row = jsonData[i];
+            if (row.length > 0 && row[0] && row[1]) { // Name and Phone are required
+              leads.push({
+                name: row[0],
+                phone: row[1],
+                email: row[2] || '',
+                notes: row[3] || '',
+                status: row[4] || 'New'
+              });
+            }
+          }
+
+          if (leads.length === 0) {
+            showFileInfo('No valid lead data found in file', 'error');
+            return;
+          }
+
+          excelData = leads;
+          showFileInfo(`Successfully loaded ${leads.length} leads from file`, 'success');
+          showPreview(leads);
+          document.getElementById('importConfirm').disabled = false;
+          
+        } catch (error) {
+          console.error('Error reading Excel file:', error);
+          showFileInfo('Error reading Excel file. Please check the file format.', 'error');
+        }
+      };
+      
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Show file info message
+    function showFileInfo(message, type = 'info') {
+      const fileInfo = document.getElementById('fileInfo');
+      fileInfo.textContent = message;
+      fileInfo.className = `file-info ${type}`;
+    }
+
+    // Show preview of Excel data
+    function showPreview(leads) {
+      const previewSection = document.getElementById('previewSection');
+      const tbody = document.querySelector('#previewTable tbody');
+      
+      tbody.innerHTML = '';
+      
+      // Show first 5 rows
+      const previewLeads = leads.slice(0, 5);
+      previewLeads.forEach(lead => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${lead.name}</td>
+          <td>${lead.phone}</td>
+          <td>${lead.email || '-'}</td>
+          <td>${lead.notes || '-'}</td>
+          <td>${lead.status}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      previewSection.style.display = 'block';
+    }
+
+    // Import leads from Excel
+    async function importLeadsFromExcel() {
+      if (!excelData || excelData.length === 0) {
+        showNotification('No data to import', 'error');
+        return;
+      }
+
+      const assignedTo = document.getElementById('bulkAssignEmployee').value;
+      if (!assignedTo) {
+        showNotification('Please select an employee to assign leads to', 'error');
+        return;
+      }
+
+      try {
+        const importData = excelData.map(lead => ({
+          ...lead,
+          assignedTo
+        }));
+
+        const res = await fetch('/api/manager/bulk-create-leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader() },
+          body: JSON.stringify({ leads: importData })
+        });
+
+        if (!res.ok) await handleErrResponse(res);
+        const result = await res.json();
+        
+        hideModal('importModal');
+        showNotification(`Successfully imported ${result.created} leads!`);
+        
+        // Reset form and reload data
+        document.getElementById('excelFile').value = '';
+        document.getElementById('fileInfo').textContent = '';
+        document.getElementById('previewSection').style.display = 'none';
+        document.getElementById('importConfirm').disabled = true;
+        excelData = null;
+        
+        await loadMyLeads();
+        
+      } catch (err) {
+        showNotification('Import failed: ' + err.message, 'error');
+      }
+    }
+
+    // Campaign Management Functions
+    async function loadCampaigns() {
+      try {
+        const res = await fetch('/api/manager/campaigns', { headers: authHeader() });
+        if (!res.ok) await handleErrResponse(res);
+        campaigns = await res.json();
+        renderCampaignsTable();
+      } catch (err) {
+        console.error('Error loading campaigns:', err);
+        showNotification('Failed to load campaigns', 'error');
+      }
+    }
+
+    function renderCampaignsTable() {
+      const tbody = document.querySelector('#campaignsTable tbody');
+      if (!tbody) return;
+
+      // Filter campaigns based on current tab
+      const filteredCampaigns = filterCampaignsByTab(campaigns, currentCampaignTab);
+      
+      tbody.innerHTML = '';
+      
+      if (filteredCampaigns.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="empty-state">
+              <i class="fas fa-bullhorn"></i>
+              <h3>No campaigns found</h3>
+              <div>Create your first campaign to get started</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      filteredCampaigns.forEach((campaign, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'fade-in';
+        tr.style.animationDelay = `${index * 0.05}s`;
+        
+        const startDate = new Date(campaign.startDate).toLocaleDateString();
+        const endDate = new Date(campaign.endDate).toLocaleDateString();
+        const statusClass = `status-${campaign.status.toLowerCase().replace(' ', '-')}`;
+        
+        tr.innerHTML = `
+          <td><strong>${campaign.name}</strong></td>
+          <td>${startDate}</td>
+          <td>${endDate}</td>
+          <td>${campaign.targetAudience}</td>
+          <td><span class="status-badge ${statusClass}">${campaign.status}</span></td>
+          <td>
+            <div class="performance-indicator">
+              <span class="performance-value">${campaign.performance?.engagementRate || 0}%</span>
+              <small>Engagement</small>
+            </div>
+          </td>
+          <td>
+            <div class="table-actions">
+              <button class="btn btn-sm btn-primary" data-action="view" data-id="${campaign._id}">
+                <i class="fas fa-eye"></i> View
+              </button>
+              <button class="btn btn-sm btn-secondary" data-action="edit" data-id="${campaign._id}">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-danger" data-action="delete" data-id="${campaign._id}">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Delegate actions
+      tbody.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const action = btn.dataset.action;
+          const id = btn.dataset.id;
+          if (action === 'view') viewCampaign(id);
+          if (action === 'edit') editCampaign(id);
+          if (action === 'delete') deleteCampaign(id);
+        });
+      });
+    }
+
+    function filterCampaignsByTab(campaigns, tab) {
+      switch(tab) {
+        case 'active':
+          return campaigns.filter(c => c.status === 'Active');
+        case 'draft':
+          return campaigns.filter(c => c.status === 'Draft');
+        case 'completed':
+          return campaigns.filter(c => c.status === 'Completed');
+        case 'ab-testing':
+          return campaigns.filter(c => c.abTesting && c.abTesting.enabled);
+        default:
+          return campaigns;
+      }
+    }
+
+    async function createCampaign() {
+      const formData = {
+        name: document.getElementById('campaignName').value,
+        description: document.getElementById('campaignDescription').value,
+        startDate: document.getElementById('campaignStartDate').value,
+        endDate: document.getElementById('campaignEndDate').value,
+        targetAudience: document.getElementById('targetAudience').value,
+        campaignType: document.getElementById('campaignType').value,
+        budget: document.getElementById('campaignBudget').value || null,
+        abTesting: {
+          enabled: document.getElementById('enableABTesting').checked,
+          variantAName: document.getElementById('variantAName').value,
+          variantBName: document.getElementById('variantBName').value,
+          testDuration: document.getElementById('testDuration').value
+        },
+        notifications: {
+          email: document.getElementById('emailNotifications').checked,
+          sms: document.getElementById('smsNotifications').checked
+        }
+      };
+
+      try {
+        const res = await fetch('/api/manager/campaigns', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader() },
+          body: JSON.stringify(formData)
+        });
+
+        if (!res.ok) await handleErrResponse(res);
+        await res.json();
+        
+        hideModal('createCampaignModal');
+        showNotification('Campaign created successfully!');
+        
+        // Reset form and reload campaigns
+        document.getElementById('campaignForm').reset();
+        await loadCampaigns();
+        
+      } catch (err) {
+        showNotification('Failed to create campaign: ' + err.message, 'error');
+      }
+    }
+
+    async function viewCampaign(campaignId) {
+      try {
+        const res = await fetch(`/api/manager/campaigns/${campaignId}`, { headers: authHeader() });
+        if (!res.ok) await handleErrResponse(res);
+        const campaign = await res.json();
+        
+        selectedCampaign = campaign;
+        showCampaignAnalytics(campaign);
+        
+      } catch (err) {
+        showNotification('Failed to load campaign: ' + err.message, 'error');
+      }
+    }
+
+    function showCampaignAnalytics(campaign) {
+      // Populate analytics data
+      document.getElementById('totalReach').textContent = campaign.metrics?.reach || 0;
+      document.getElementById('engagementRate').textContent = `${campaign.metrics?.engagementRate || 0}%`;
+      document.getElementById('conversionRate').textContent = `${campaign.metrics?.conversionRate || 0}%`;
+      document.getElementById('roi').textContent = `${campaign.metrics?.roi || 0}%`;
+      
+      // Initialize all charts
+      initializePerformanceCharts(campaign);
+      initializeABTestCharts(campaign);
+      initializeAudienceCharts(campaign);
+      
+      showModal('analyticsModal');
+    }
+
+    // Chart instances storage
+    let chartInstances = {};
+
+    // Initialize performance charts
+    function initializePerformanceCharts(campaign) {
+      // Performance over time chart
+      const performanceCtx = document.getElementById('performanceChart');
+      if (performanceCtx) {
+        if (chartInstances.performanceChart) {
+          chartInstances.performanceChart.destroy();
+        }
+        
+        const performanceData = generatePerformanceData(campaign);
+        chartInstances.performanceChart = new Chart(performanceCtx, {
+          type: 'line',
+          data: {
+            labels: performanceData.labels,
+            datasets: [
+              {
+                label: 'Impressions',
+                data: performanceData.impressions,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true
+              },
+              {
+                label: 'Clicks',
+                data: performanceData.clicks,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4,
+                fill: true
+              },
+              {
+                label: 'Conversions',
+                data: performanceData.conversions,
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                tension: 0.4,
+                fill: true
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  usePointStyle: true,
+                  padding: 20
+                }
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)'
+                }
+              },
+              x: {
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Engagement metrics charts
+      initializeEngagementCharts(campaign);
+    }
+
+    // Initialize engagement charts
+    function initializeEngagementCharts(campaign) {
+      // Engagement rate chart
+      const engagementCtx = document.getElementById('engagementChart');
+      if (engagementCtx) {
+        if (chartInstances.engagementChart) {
+          chartInstances.engagementChart.destroy();
+        }
+        
+        chartInstances.engagementChart = new Chart(engagementCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Engaged', 'Not Engaged'],
+            datasets: [{
+              data: [
+                campaign.metrics?.engagementRate || 0,
+                100 - (campaign.metrics?.engagementRate || 0)
+              ],
+              backgroundColor: ['#10b981', '#e5e7eb'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return context.label + ': ' + context.parsed + '%';
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Conversion rate chart
+      const conversionCtx = document.getElementById('conversionChart');
+      if (conversionCtx) {
+        if (chartInstances.conversionChart) {
+          chartInstances.conversionChart.destroy();
+        }
+        
+        chartInstances.conversionChart = new Chart(conversionCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Converted', 'Not Converted'],
+            datasets: [{
+              data: [
+                campaign.metrics?.conversionRate || 0,
+                100 - (campaign.metrics?.conversionRate || 0)
+              ],
+              backgroundColor: ['#f59e0b', '#e5e7eb'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return context.label + ': ' + context.parsed + '%';
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // Initialize A/B testing charts
+    function initializeABTestCharts(campaign) {
+      if (!campaign.abTesting?.enabled) return;
+
+      // A/B test comparison chart
+      const abTestCtx = document.getElementById('abTestChart');
+      if (abTestCtx) {
+        if (chartInstances.abTestChart) {
+          chartInstances.abTestChart.destroy();
+        }
+        
+        const variantA = campaign.abTesting.results.variantA;
+        const variantB = campaign.abTesting.results.variantB;
+        
+        chartInstances.abTestChart = new Chart(abTestCtx, {
+          type: 'bar',
+          data: {
+            labels: ['CTR', 'Conversion Rate', 'Engagement'],
+            datasets: [
+              {
+                label: 'Variant A',
+                data: [variantA.ctr, variantA.conversionRate, variantA.clicks],
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: '#667eea',
+                borderWidth: 2
+              },
+              {
+                label: 'Variant B',
+                data: [variantB.ctr, variantB.conversionRate, variantB.clicks],
+                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                borderColor: '#10b981',
+                borderWidth: 2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)'
+                }
+              },
+              x: {
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Statistical significance chart
+      initializeSignificanceChart(campaign);
+      
+      // Update variant stats display
+      updateVariantStats(campaign);
+    }
+
+    // Initialize significance chart
+    function initializeSignificanceChart(campaign) {
+      const significanceCtx = document.getElementById('significanceChart');
+      if (significanceCtx) {
+        if (chartInstances.significanceChart) {
+          chartInstances.significanceChart.destroy();
+        }
+        
+        const variantA = campaign.abTesting.results.variantA;
+        const variantB = campaign.abTesting.results.variantB;
+        
+        // Calculate confidence level (simplified)
+        const confidence = calculateConfidence(variantA, variantB);
+        
+        chartInstances.significanceChart = new Chart(significanceCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Confident', 'Not Confident'],
+            datasets: [{
+              data: [confidence, 100 - confidence],
+              backgroundColor: ['#10b981', '#e5e7eb'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return context.label + ': ' + context.parsed + '%';
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // Initialize audience charts
+    function initializeAudienceCharts(campaign) {
+      // Demographics chart
+      const demographicsCtx = document.getElementById('demographicsChart');
+      if (demographicsCtx) {
+        if (chartInstances.demographicsChart) {
+          chartInstances.demographicsChart.destroy();
+        }
+        
+        const demographicsData = generateDemographicsData(campaign);
+        chartInstances.demographicsChart = new Chart(demographicsCtx, {
+          type: 'pie',
+          data: {
+            labels: demographicsData.labels,
+            datasets: [{
+              data: demographicsData.data,
+              backgroundColor: [
+                '#667eea', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+                '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6b7280'
+              ],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right'
+              }
+            }
+          }
+        });
+      }
+
+      // Geographic distribution chart
+      const geographicCtx = document.getElementById('geographicChart');
+      if (geographicCtx) {
+        if (chartInstances.geographicChart) {
+          chartInstances.geographicChart.destroy();
+        }
+        
+        const geographicData = generateGeographicData(campaign);
+        chartInstances.geographicChart = new Chart(geographicCtx, {
+          type: 'bar',
+          data: {
+            labels: geographicData.labels,
+            datasets: [{
+              label: 'Leads',
+              data: geographicData.data,
+              backgroundColor: 'rgba(102, 126, 234, 0.8)',
+              borderColor: '#667eea',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)'
+                }
+              },
+              x: {
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Behavior patterns chart
+      const behaviorCtx = document.getElementById('behaviorChart');
+      if (behaviorCtx) {
+        if (chartInstances.behaviorChart) {
+          chartInstances.behaviorChart.destroy();
+        }
+        
+        const behaviorData = generateBehaviorData(campaign);
+        chartInstances.behaviorChart = new Chart(behaviorCtx, {
+          type: 'radar',
+          data: {
+            labels: behaviorData.labels,
+            datasets: [{
+              label: 'Current Performance',
+              data: behaviorData.data,
+              backgroundColor: 'rgba(102, 126, 234, 0.2)',
+              borderColor: '#667eea',
+              borderWidth: 2,
+              pointBackgroundColor: '#667eea',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top'
+              }
+            },
+            scales: {
+              r: {
+                beginAtZero: true,
+                max: 100,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Update insights content
+      updateInsightsContent(campaign);
+    }
+
+    // Helper functions for chart data generation
+    function generatePerformanceData(campaign) {
+      const days = 30; // Last 30 days
+      const labels = [];
+      const impressions = [];
+      const clicks = [];
+      const conversions = [];
+      
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        
+        // Generate sample data (replace with real data from campaign.performance.dailyStats)
+        impressions.push(Math.floor(Math.random() * 100) + 50);
+        clicks.push(Math.floor(Math.random() * 20) + 10);
+        conversions.push(Math.floor(Math.random() * 5) + 2);
+      }
+      
+      return { labels, impressions, clicks, conversions };
+    }
+
+    function generateDemographicsData(campaign) {
+      // Sample demographics data (replace with real data)
+      return {
+        labels: ['18-24', '25-34', '35-44', '45-54', '55+'],
+        data: [25, 35, 20, 15, 5]
+      };
+    }
+
+    function generateGeographicData(campaign) {
+      // Sample geographic data (replace with real data)
+      return {
+        labels: ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
+        data: [30, 25, 20, 15, 10]
+      };
+    }
+
+    function generateBehaviorData(campaign) {
+      // Sample behavior data (replace with real data)
+      return {
+        labels: ['Engagement', 'Retention', 'Conversion', 'Satisfaction', 'Loyalty'],
+        data: [75, 60, 45, 80, 65]
+      };
+    }
+
+    function calculateConfidence(variantA, variantB) {
+      // Simplified confidence calculation (replace with proper statistical test)
+      const totalA = variantA.impressions;
+      const totalB = variantB.impressions;
+      
+      if (totalA === 0 || totalB === 0) return 50;
+      
+      const rateA = variantA.conversionRate / 100;
+      const rateB = variantB.conversionRate / 100;
+      
+      const diff = Math.abs(rateA - rateB);
+      const confidence = Math.min(95, Math.max(50, 50 + (diff * 100)));
+      
+      return Math.round(confidence);
+    }
+
+    function updateVariantStats(campaign) {
+      const variantA = campaign.abTesting.results.variantA;
+      const variantB = campaign.abTesting.results.variantB;
+      
+      // Update variant A stats
+      const variantAStats = document.querySelector('#variantA .variant-stats');
+      if (variantAStats) {
+        variantAStats.innerHTML = `
+          <div class="stat-item">
+            <span class="stat-label">Impressions:</span>
+            <span class="stat-value">${variantA.impressions}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">CTR:</span>
+            <span class="stat-value">${variantA.ctr}%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Conversion Rate:</span>
+            <span class="stat-value">${variantA.conversionRate}%</span>
+          </div>
+        `;
+      }
+      
+      // Update variant B stats
+      const variantBStats = document.querySelector('#variantB .variant-stats');
+      if (variantBStats) {
+        variantBStats.innerHTML = `
+          <div class="stat-item">
+            <span class="stat-label">Impressions:</span>
+            <span class="stat-value">${variantB.impressions}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">CTR:</span>
+            <span class="stat-value">${variantB.ctr}%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Conversion Rate:</span>
+            <span class="stat-value">${variantB.conversionRate}%</span>
+          </div>
+        `;
+      }
+    }
+
+    function updateInsightsContent(campaign) {
+      // Update interests content
+      const interestsContent = document.getElementById('interestsContent');
+      if (interestsContent) {
+        interestsContent.innerHTML = `
+          <div class="interest-item">
+            <span class="interest-name">Technology</span>
+            <span class="interest-score">85%</span>
+          </div>
+          <div class="interest-item">
+            <span class="interest-name">Business</span>
+            <span class="interest-score">72%</span>
+          </div>
+          <div class="interest-item">
+            <span class="interest-name">Marketing</span>
+            <span class="interest-score">68%</span>
+          </div>
+        `;
+      }
+      
+      // Update engagement content
+      const engagementContent = document.getElementById('engagementContent');
+      if (engagementContent) {
+        engagementContent.innerHTML = `
+          <div class="engagement-item">
+            <span class="engagement-metric">Avg. Session Time</span>
+            <span class="engagement-value">4m 32s</span>
+          </div>
+          <div class="engagement-item">
+            <span class="engagement-metric">Bounce Rate</span>
+            <span class="engagement-value">23%</span>
+          </div>
+          <div class="engagement-item">
+            <span class="engagement-metric">Return Rate</span>
+            <span class="engagement-value">67%</span>
+          </div>
+        `;
+      }
+    }
+
+    async function deleteCampaign(campaignId) {
+      if (!confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) return;
+      
+      try {
+        const res = await fetch(`/api/manager/campaigns/${campaignId}`, {
+          method: 'DELETE',
+          headers: authHeader()
+        });
+        
+        if (!res.ok) await handleErrResponse(res);
+        await res.json();
+        
+        showNotification('Campaign deleted successfully!');
+        await loadCampaigns();
+        
+      } catch (err) {
+        showNotification('Delete failed: ' + err.message, 'error');
+      }
+    }
+
+    async function editCampaign(campaignId) {
+      try {
+        const res = await fetch(`/api/manager/campaigns/${campaignId}`, { headers: authHeader() });
+        if (!res.ok) await handleErrResponse(res);
+        const campaign = await res.json();
+        
+        // Populate form with campaign data
+        document.getElementById('campaignName').value = campaign.name;
+        document.getElementById('campaignDescription').value = campaign.description || '';
+        document.getElementById('campaignStartDate').value = campaign.startDate.split('T')[0];
+        document.getElementById('campaignEndDate').value = campaign.endDate.split('T')[0];
+        document.getElementById('targetAudience').value = campaign.targetAudience;
+        document.getElementById('campaignType').value = campaign.campaignType;
+        document.getElementById('campaignBudget').value = campaign.budget || '';
+        
+        if (campaign.abTesting?.enabled) {
+          document.getElementById('enableABTesting').checked = true;
+          document.getElementById('variantAName').value = campaign.abTesting.variantAName || '';
+          document.getElementById('variantBName').value = campaign.abTesting.variantBName || '';
+          document.getElementById('testDuration').value = campaign.abTesting.testDuration || 7;
+          document.getElementById('abTestingConfig').style.display = 'block';
+        }
+        
+        if (campaign.notifications?.email) {
+          document.getElementById('emailNotifications').checked = true;
+        }
+        if (campaign.notifications?.sms) {
+          document.getElementById('smsNotifications').checked = true;
+        }
+        
+        selectedCampaign = campaign;
+        showModal('createCampaignModal');
+        
+      } catch (err) {
+        showNotification('Failed to load campaign for editing: ' + err.message, 'error');
+      }
+    }
+
+    function exportCampaignReport(campaign) {
+      const reportData = {
+        campaign: campaign.name,
+        date: new Date().toLocaleDateString(),
+        metrics: campaign.metrics || {},
+        performance: campaign.performance || {},
+        abTesting: campaign.abTesting || {}
+      };
+      
+      // Create CSV content
+      let csvContent = 'Campaign Report\n';
+      csvContent += `Campaign: ${campaign.name}\n`;
+      csvContent += `Date: ${new Date().toLocaleDateString()}\n\n`;
+      csvContent += 'Metric,Value\n';
+      csvContent += `Total Reach,${campaign.metrics?.reach || 0}\n`;
+      csvContent += `Engagement Rate,${campaign.metrics?.engagementRate || 0}%\n`;
+      csvContent += `Conversion Rate,${campaign.metrics?.conversionRate || 0}%\n`;
+      csvContent += `ROI,${campaign.metrics?.roi || 0}%\n`;
+      
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `campaign_report_${campaign.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      showNotification('Campaign report exported successfully!');
+    }
+
+    // Export leads to Excel
+    async function exportLeadsToExcel() {
+      try {
+        const res = await fetch(ENDPOINTS.myLeads, { headers: authHeader() });
+        if (!res.ok) await handleErrResponse(res);
+        const leads = await res.json();
+
+        if (!leads || leads.length === 0) {
+          showNotification('No leads to export', 'error');
+          return;
+        }
+
+        // Prepare data for export
+        const exportData = [
+          ['Name', 'Phone', 'Email', 'Status', 'Assigned To', 'Notes', 'Follow-up Date', 'Created Date']
+        ];
+
+        leads.forEach(lead => {
+          exportData.push([
+            lead.name,
+            lead.phone || '',
+            lead.email || '',
+            lead.status || 'New',
+            lead.assignedTo ? lead.assignedTo.name : 'Unassigned',
+            lead.notes || '',
+            lead.followUpDate ? new Date(lead.followUpDate).toLocaleDateString() : '',
+            new Date(lead.createdAt).toLocaleDateString()
+          ]);
+        });
+
+        // Create workbook and worksheet
+        const ws = XLSX.utils.aoa_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Leads Export');
+        
+        // Auto-size columns
+        const colWidths = [20, 15, 25, 12, 20, 30, 15, 15];
+        ws['!cols'] = colWidths.map(width => ({ width }));
+
+        // Save the file
+        const fileName = `leads_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+        
+        showNotification(`Exported ${leads.length} leads to Excel file`);
+        
+      } catch (err) {
+        console.error('Export error:', err);
+        showNotification('Export failed: ' + err.message, 'error');
+      }
+    }
+
     // Enhanced initialization
     (async function init() {
       const token = localStorage.getItem('token');
@@ -1234,13 +3354,17 @@
       // Show welcome message
       showNotification('Welcome to Manager Dashboard!');
       
-      // Load all data
-      try {
-        await Promise.all([loadEmployees(), loadMyLeads(), loadTeamCallLogs()]);
-      } catch (err) {
-        console.error('Initialization error:', err);
-        showNotification('Failed to load dashboard data', 'error');
-      }
+          // Setup tab switching
+    setupTabSwitching();
+    setupCampaignTabSwitching();
+    
+    // Load all data
+    try {
+      await Promise.all([loadEmployees(), loadMyLeads(), loadTeamCallLogs(), loadCampaigns()]);
+    } catch (err) {
+      console.error('Initialization error:', err);
+      showNotification('Failed to load dashboard data', 'error');
+    }
     })();
 
     // Add keyboard shortcuts
