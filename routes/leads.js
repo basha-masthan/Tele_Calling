@@ -35,16 +35,10 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET /leads/unassigned - Get leads without assignedTo
-router.get('/unassigned', async (req, res) => {
-    try {
-        const leads = await Lead.find({ assignedTo: { $exists: false } })
-            .select('-__v');
-        res.json(leads);
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
+// GET /api/leads/:id  -> Fetch a single lead by ID
+
+
+
 
 // POST /leads/assign - Assign multiple leads to a user
 router.post('/assign', async (req, res) => {
@@ -66,17 +60,32 @@ router.post('/assign', async (req, res) => {
     }
 });
 
-// GET /leads/assignments - Get all assigned leads with user info
-router.get('/assignments', async (req, res) => {
+
+router.get('/unassigned', async (req, res) => {
+    console.log("Basha bhai hear ****")
     try {
-        const assignments = await Lead.find({ assignedTo: { $exists: true } })
-            .populate('assignedTo', 'name email')
-            .select('-__v');
-        res.json(assignments);
+        const leads = await Lead.find({ assignedTo: null });
+        res.json(leads);
     } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch assignments' });
+        console.error('Error fetching unassigned leads:', err);
+        res.status(500).json({ error: 'Server error' });
     }
 });
+
+// ✅ Route for assignments
+router.get('/assignments', async (req, res) => {
+    console.log("Basha bhai hear ****")
+    try {
+        const leads = await Lead.find()
+            .populate('assignedTo', 'name email')
+            .populate('createdBy', 'name email');
+        res.json(leads);
+    } catch (err) {
+        console.error('Error fetching assignments:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 
 // GET /users - Fetch all users (name, email only)
 router.get('/users', async (req, res) => {
@@ -87,5 +96,25 @@ router.get('/users', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch users' });
     }
 });
+
+router.get('/:id', async (req, res) => {
+    try {
+        const leadId = req.params.id;
+
+        // Find the lead by ID and populate assignedTo & createdBy
+        const lead = await Lead.findById(leadId)
+            .populate('assignedTo createdBy', 'name email role');
+
+        if (!lead) {
+            return res.status(404).json({ error: 'Lead not found' });
+        }
+
+        res.json(lead);
+    } catch (err) {
+        console.error('Error fetching lead by ID:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 
 module.exports = router;

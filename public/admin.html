@@ -732,7 +732,7 @@ tr.clickable.expanded::after {
     <div class="card-content">
       <div id="leadAssignmentsContainer" class="loading">Loading assignments...</div>
     </div>
-  </div>
+  </div>  
 </section>
 
 <!-- Script for Lead Assignment -->
@@ -770,7 +770,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderLeads(leads) {
     leadsList.innerHTML = "";
     if (!leads.length) {
-      leadsList.innerHTML = "<p>No unassigned leads found.</p>";
+      leadsList.innerHTML = "<p>No unassigned leads bhai.</p>";
       return;
     }
     leads.forEach(lead => {
@@ -1056,7 +1056,7 @@ async function loadLeads() {
   }
 }
 
-// Assignment functionality
+// Assignment functionality 
 let allEmployees = [];
 
 async function loadManagersForAssignment() {

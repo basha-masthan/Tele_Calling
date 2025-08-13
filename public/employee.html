@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #343a40;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px auto;
+            background: white;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        button {
+            padding: 6px 12px;
+            margin: 2px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn-edit { background: #28a745; color: white; }
+        .btn-status { background: #ffc107; color: black; }
+        .btn-calls { background: #17a2b8; color: white; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+        }
+        textarea, select, input {
+            width: 100%;
+            margin: 5px 0;
+            padding: 8px;
+        }
+        #callLogsList {
+            list-style: none;
+            padding: 0;
+        }
+        #callLogsList li {
+            background: white;
+            margin: 5px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Employee Dashboard</h1>
+</header>
+
+<h2 style="text-align:center;">Assigned Leads</h2>
+<table id="leadsTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Contact</th>
+            <th>Status</th>
+            <th>Notes</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h2 style="text-align:center;">My Call Logs</h2>
+<div style="text-align:center; margin-bottom:20px;">
+    <input type="text" id="callDetails" placeholder="Call details">
+    <button onclick="addCallLog()">Add Call Log</button>
+</div>
+<ul id="callLogsList"></ul>
+
+<!-- Notes Modal -->
+<div id="notesModal" class="modal">
+    <div class="modal-content">
+        <h3>Update Notes</h3>
+        <textarea id="notesText"></textarea>
+        <button onclick="saveNotes()">Save</button>
+        <button onclick="closeNotesModal()">Cancel</button>
+    </div>
+</div>
+
+<!-- Status Modal -->
+<div id="statusModal" class="modal">
+    <div class="modal-content">
+        <h3>Change Status</h3>
+        <select id="statusSelect">
+            <option>New</option>
+            <option>Follow-up</option>
+            <option>Converted</option>
+            <option>Lost</option>
+        </select>
+        <button onclick="saveStatus()">Save</button>
+        <button onclick="closeStatusModal()">Cancel</button>
+    </div>
+</div>
+<input type="file" id="recordingInput" accept="audio/mp3,audio/*" style="display:none"><script>
+    let currentLeadId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!localStorage.getItem('token')) {
+            window.location.href = '/login.html';
+            return;
+        }
+        fetchLeads();
+        fetchCallLogs();
+    });
+
+    async function fetchLeads() {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch('/api/employee/leads', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const leads = await res.json();
+            const tbody = document.querySelector('#leadsTable tbody');
+            tbody.innerHTML = '';
+            leads.forEach(lead => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${lead.name}</td>
+                        <td>${lead.contact}</td>
+                        <td>${lead.status || 'Pending'}</td>
+                        <td>${lead.notes || ''}</td>
+                        <td>
+                            <td>
+                            <button class="btn-edit" onclick="openNotesModal('${lead._id}', '${lead.notes || ''}')">Edit Notes</button>
+                            <button class="btn-status" onclick="openStatusModal('${lead._id}', '${lead.status || 'New'}')">Change Status</button>
+                            <button class="btn-calls" onclick="viewCallLogs('${lead._id}')">View Calls</button>
+                            <button class="btn-upload" onclick="startUploadForLead('${lead._id}')">Upload Recording</button>
+                        </td>
+
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (err) {
+            console.error('Error fetching leads:', err);
+        }
+    }
+
+    function openNotesModal(leadId, notes) {
+        currentLeadId = leadId;
+        document.getElementById('notesText').value = notes;
+        document.getElementById('notesModal').style.display = 'flex';
+    }
+
+    function closeNotesModal() {
+        document.getElementById('notesModal').style.display = 'none';
+    }
+
+    async function saveNotes() {
+        const notes = document.getElementById('notesText').value;
+        const token = localStorage.getItem('token');
+        await fetch('/api/employee/update-lead', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ leadId: currentLeadId, notes })
+        });
+        closeNotesModal();
+        fetchLeads();
+    }
+
+    function openStatusModal(leadId, status) {
+        currentLeadId = leadId;
+        document.getElementById('statusSelect').value = status;
+        document.getElementById('statusModal').style.display = 'flex';
+    }
+
+    function closeStatusModal() {
+        document.getElementById('statusModal').style.display = 'none';
+    }
+
+    async function saveStatus() {
+        const status = document.getElementById('statusSelect').value;
+        const token = localStorage.getItem('token');
+        await fetch('/api/employee/update-lead', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ leadId: currentLeadId, status })
+        });
+        closeStatusModal();
+        fetchLeads();
+    }
+
+    async function addCallLog() {
+        const details = document.getElementById('callDetails').value;
+        const token = localStorage.getItem('token');
+        await fetch('/api/employee/call-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ details })
+        });
+        document.getElementById('callDetails').value = '';
+        fetchCallLogs();
+    }
+
+    async function fetchCallLogs() {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/employee/my-call-logs', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const logs = await res.json();
+        const list = document.getElementById('callLogsList');
+        list.innerHTML = logs.map(log => `<li>${log.details} - ${new Date(log.date).toLocaleString()}</li>`).join('');
+    }
+
+    function viewCallLogs(leadId) {
+        alert("This would fetch and show call logs for lead ID: " + leadId);
+    }
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Ensure the input exists; if not, create it (defensive)
+  let recordingInput = document.getElementById('recordingInput');
+  if (!recordingInput) {
+    recordingInput = document.createElement('input');
+    recordingInput.type = 'file';
+    recordingInput.id = 'recordingInput';
+    recordingInput.accept = 'audio/mp3,audio/*';
+    recordingInput.style.display = 'none';
+    document.body.appendChild(recordingInput);
+  }
+
+  let currentLeadId = null;
+
+  // Called from your table button: onclick="startUploadForLead('...')"
+  window.startUploadForLead = function(leadId) {
+    currentLeadId = leadId;
+    recordingInput.value = ''; // reset
+    recordingInput.click();
+  };
+
+  recordingInput.addEventListener('change', async function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    // Basic validation: allow audio files only and prefer .mp3
+    const allowedTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/*'];
+    if (!file.type.startsWith('audio') && !file.name.toLowerCase().endsWith('.mp3')) {
+      alert('Please upload an MP3 or other audio file.');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Not logged in. Please login first.');
+      window.location.href = '/login.html';
+      return;
+    }
+
+    if (!currentLeadId) {
+      alert('Lead ID is missing. Please try again.');
+      return;
+    }
+
+    // Optional: small UI feedback
+    const statusEl = document.getElementById('leadStatusMsg') || document.createElement('div');
+    statusEl.id = 'leadStatusMsg';
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Uploading...';
+    if (!document.getElementById('leadStatusMsg')) {
+      // append to page footer or near the list
+      document.body.appendChild(statusEl);
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('recording', file);
+      formData.append('leadId', currentLeadId);
+
+      // NOTE: Use the exact route your server exposes.
+      // I used the route name we added in routes/employee.js: /api/employee/upload-call-log
+      const res = await fetch('/api/employee/upload-call-log', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}` // do NOT set Content-Type for FormData
+        },
+        body: formData
+      });
+
+      // Try parse JSON safely
+      let payload = null;
+      try { payload = await res.json(); } catch (e) { console.warn('No JSON response', e); }
+
+      if (!res.ok) {
+        console.error('Upload failed', res.status, payload);
+        statusEl.textContent = payload?.message || `Upload failed (status ${res.status})`;
+        alert('Upload failed: ' + (payload?.message || res.statusText));
+        return;
+      }
+
+      statusEl.textContent = 'Upload successful!';
+      // Refresh leads so the new recording URL (if shown) appears
+      if (typeof fetchLeads === 'function') fetchLeads();
+
+      // Optionally, show the uploaded URL
+      if (payload?.url) {
+        const link = document.createElement('a');
+        link.href = payload.url;
+        link.target = '_blank';
+        link.textContent = 'Open recording';
+        statusEl.appendChild(document.createElement('br'));
+        statusEl.appendChild(link);
+      }
+    } catch (err) {
+      console.error('Upload error', err);
+      statusEl.textContent = 'Upload failed (network error).';
+      alert('Upload failed: ' + err.message);
+    } finally {
+      // cleanup
+      currentLeadId = null;
+      recordingInput.value = '';
+      setTimeout(() => { if (statusEl) statusEl.style.display = 'none'; }, 4000);
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@ const leadSchema = new mongoose.Schema({
     email: { type: String },
     status: { type: String, default: 'New' }, // New, Follow-up, Converted, Lost
     notes: { type: String },
+    recordingUrl: { type: String }, // URL of uploaded audio
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // employee assigned
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // manager/admin who created
     createdAt: { type: Date, default: Date.now }

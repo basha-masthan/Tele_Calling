@@ -40,10 +40,7 @@ const path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Error handler
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ message: err.message || 'Server Error' });
-});
+
 
 // Start server
 const PORT = process.env.PORT || 5000;
