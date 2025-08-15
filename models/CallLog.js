@@ -18,7 +18,8 @@ const CallLogSchema = new mongoose.Schema({
     simCard: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SimCard',
-        required: true
+        required: false,
+        default: null
     },
     
     // Call details
@@ -66,7 +67,7 @@ const CallLogSchema = new mongoose.Schema({
     // Call outcome and notes
     outcome: {
         type: String,
-        enum: ['Positive', 'Neutral', 'Negative', 'Follow-up Required', 'Not Interested', 'Interested', 'Hot Lead', 'Converted'],
+        enum: ['Positive', 'Neutral', 'Negative', 'Follow-up Required', 'Not Interested', 'Interested', 'Hot Lead', 'Converted', 'Wrong Number', 'Switched Off'],
         default: 'Neutral'
     },
     
@@ -98,6 +99,11 @@ const CallLogSchema = new mongoose.Schema({
     },
     
     // Call recording
+    recordingFile: {
+        type: String, // File path or URL
+        required: false
+    },
+    
     recordingUrl: {
         type: String
     },
@@ -228,7 +234,7 @@ const CallLogSchema = new mongoose.Schema({
 // Indexes for better query performance
 CallLogSchema.index({ lead: 1, createdAt: -1 });
 CallLogSchema.index({ employee: 1, createdAt: -1 });
-CallLogSchema.index({ simCard: 1, createdAt: -1 });
+CallLogSchema.index({ simCard: 1, createdAt: -1 }); // This will include null values
 CallLogSchema.index({ callStatus: 1 });
 CallLogSchema.index({ outcome: 1 });
 CallLogSchema.index({ callStartTime: 1 });
@@ -298,16 +304,69 @@ CallLogSchema.pre('save', function(next) {
 
 // Post-save middleware
 CallLogSchema.post('save', async function() {
-    // Update SIM card call summary
-    const SimCard = mongoose.model('SimCard');
-    await SimCard.findByIdAndUpdate(this.simCard, {
-        $inc: { totalCalls: 1, totalMinutes: this.callDuration },
-        lastUsed: new Date()
-    });
+    // Update SIM card call summary if simCard exists
+    if (this.simCard) {
+        const SimCard = mongoose.model('SimCard');
+        await SimCard.findByIdAndUpdate(this.simCard, {
+            $inc: { totalCalls: 1, totalMinutes: this.callDuration },
+            lastUsed: new Date()
+        });
+    }
     
     // Update lead status if specified
     if (this.leadStatusAfterCall !== 'No Change') {
         await this.updateLeadStatus();
+    }
+    
+    // Check if lead should be marked as dead
+    try {
+        const Lead = mongoose.model('Lead');
+        const lead = await Lead.findById(this.lead);
+        if (lead) {
+            // Update last call attempt and increment attempts
+            lead.lastCallAttempt = new Date();
+            lead.callAttempts = (lead.callAttempts || 0) + 1;
+            
+            // Check if lead should be marked as dead
+            let shouldMarkAsDead = false;
+            let deadReason = '';
+            
+            // Check for wrong number or switched off
+            if (this.outcome === 'Wrong Number' || this.outcome === 'Switched Off') {
+                shouldMarkAsDead = true;
+                deadReason = this.outcome;
+            }
+            
+            // Check if switched off for more than 3 days (3 attempts)
+            if (this.outcome === 'Switched Off') {
+                const threeDaysAgo = new Date();
+                threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+                
+                // Count switched off attempts in last 3 days
+                const switchedOffAttempts = await mongoose.model('CallLog').countDocuments({
+                    lead: this.lead,
+                    outcome: 'Switched Off',
+                    createdAt: { $gte: threeDaysAgo }
+                });
+                
+                if (switchedOffAttempts >= 3) {
+                    shouldMarkAsDead = true;
+                    deadReason = 'Switched Off';
+                }
+            }
+            
+            if (shouldMarkAsDead) {
+                lead.status = 'Dead';
+                lead.deadLeadReason = deadReason;
+                lead.deadLeadDate = new Date();
+                lead.assignedTo = null; // Remove assignment
+                console.log(`Lead ${lead._id} marked as dead due to: ${deadReason}`);
+            }
+            
+            await lead.save();
+        }
+    } catch (error) {
+        console.error('Error checking lead for dead status:', error);
     }
 });
 

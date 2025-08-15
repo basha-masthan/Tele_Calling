@@ -129,10 +129,22 @@ exports.updateLeadNotes = async (req, res) => {
 };
 
 // POST /api/employee/call-log
-// body: { leadId, callStatus, notes }
+// body: { leadId, callStatus, notes, callDuration, outcome, followUpRequired, followUpDate, callQuality, simCardId, recordingFile }
 exports.addCallLog = async (req, res) => {
   try {
-    const { leadId, callStatus, notes } = req.body;
+    const { 
+      leadId, 
+      callStatus, 
+      notes, 
+      callDuration, 
+      outcome, 
+      followUpRequired, 
+      followUpDate,
+      callQuality,
+      simCardId,
+      recordingFile
+    } = req.body;
+    
     if (!leadId || !callStatus) return res.status(400).json({ error: 'leadId and callStatus required' });
 
     // ensure lead exists and is assigned to this employee
@@ -142,15 +154,87 @@ exports.addCallLog = async (req, res) => {
       return res.status(403).json({ error: 'Not allowed to log call for this lead' });
     }
 
-    const log = await CallLog.create({
+    // Validate and fix enum values to match schema
+    let validatedCallQuality = callQuality;
+    if (callQuality) {
+      // Fix enum values to match schema
+      if (callQuality.audioQuality === 'Good') {
+        validatedCallQuality.audioQuality = 'Clear';
+      }
+      if (callQuality.signalStrength === 'Good') {
+        validatedCallQuality.signalStrength = 'Good'; // This is valid
+      }
+    }
+
+    // Validate and fix outcome enum values
+    let validatedOutcome = outcome;
+    if (outcome) {
+      // Map invalid outcome values to valid ones
+      const outcomeMapping = {
+        'Follow-up': 'Follow-up Required',
+        'Follow up': 'Follow-up Required',
+        'Followup': 'Follow-up Required',
+        'Not Interested': 'Not Interested',
+        'Interested': 'Interested',
+        'Hot Lead': 'Hot Lead',
+        'Converted': 'Converted',
+        'Positive': 'Positive',
+        'Neutral': 'Neutral',
+        'Negative': 'Negative',
+        'Wrong Number': 'Wrong Number',
+        'Switched Off': 'Switched Off'
+      };
+      
+      validatedOutcome = outcomeMapping[outcome] || 'Neutral';
+    }
+
+    // Create call log with required fields
+    const logData = {
       lead: leadId,
       employee: req.user._id,
       callStatus,
+      callStartTime: new Date(), // Set current time as call start
       notes,
       uploadedBy: req.user._id
-    });
+    };
 
-    res.status(201).json({ message: 'Call log saved', log });
+    // Add SIM card if provided
+    if (simCardId) {
+      logData.simCard = simCardId;
+    }
+
+    // Add recording file if provided
+    if (recordingFile) {
+      logData.recordingFile = recordingFile;
+      // If recording file is provided, set recording duration if available
+      if (callDuration) {
+        logData.recordingDuration = callDuration;
+      }
+    }
+
+    // Add optional fields if provided
+    if (callDuration !== undefined) logData.callDuration = callDuration;
+    if (validatedOutcome) logData.outcome = validatedOutcome;
+    if (followUpRequired !== undefined) logData.followUpRequired = followUpRequired;
+    if (followUpDate) logData.followUpDate = followUpDate;
+    if (validatedCallQuality) logData.callQuality = validatedCallQuality;
+
+    // Log the data being sent for debugging
+    console.log('Creating call log with data:', JSON.stringify(logData, null, 2));
+
+    const log = await CallLog.create(logData);
+
+    // Populate the response
+    const populatedLog = await CallLog.findById(log._id)
+      .populate('lead', 'name phone email status sector region')
+      .populate('employee', 'name email');
+    
+    // Populate simCard only if it exists
+    if (log.simCard) {
+      await populatedLog.populate('simCard', 'simNumber carrier');
+    }
+
+    res.status(201).json({ message: 'Call log saved', log: populatedLog });
   } catch (err) {
     console.error('addCallLog error:', err);
     res.status(500).json({ error: 'Failed to save call log', details: err.message });

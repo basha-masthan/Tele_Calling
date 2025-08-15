@@ -1156,6 +1156,143 @@ router.get('/leads/search', async (req, res) => {
     }
 });
 
+// POST /api/employee/call-log-with-recording
+// Upload call log with audio recording file
+router.post('/call-log-with-recording', upload.single('recording'), async (req, res) => {
+    try {
+        const {
+            leadId,
+            callStatus,
+            notes,
+            callDuration,
+            outcome,
+            followUpRequired,
+            followUpDate,
+            callQuality,
+            simCardId
+        } = req.body;
+
+        if (!leadId || !callStatus) {
+            return res.status(400).json({ error: 'leadId and callStatus required' });
+        }
+
+        // Ensure lead exists and is assigned to this employee
+        const lead = await Lead.findById(leadId);
+        if (!lead) {
+            return res.status(404).json({ error: 'Lead not found' });
+        }
+        if (!lead.assignedTo || String(lead.assignedTo) !== String(req.user._id)) {
+            return res.status(403).json({ error: 'Not allowed to log call for this lead' });
+        }
+
+        let recordingFile = null;
+        let recordingUrl = null;
+
+        // Handle file upload if provided
+        if (req.file) {
+            try {
+                // Upload to Cloudinary
+                const uploadPromise = new Promise((resolve, reject) => {
+                    const uploadStream = cloudinary.uploader.upload_stream(
+                        {
+                            resource_type: 'video',
+                            folder: 'call-recordings',
+                            format: 'mp3',
+                            public_id: `call_${leadId}_${Date.now()}`
+                        },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        }
+                    );
+
+                    streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
+                });
+
+                const cloudinaryResult = await uploadPromise;
+                recordingFile = cloudinaryResult.secure_url;
+                recordingUrl = cloudinaryResult.secure_url;
+                
+                console.log('Recording uploaded to Cloudinary:', recordingFile);
+            } catch (uploadError) {
+                console.error('File upload error:', uploadError);
+                return res.status(500).json({ error: 'Failed to upload recording file' });
+            }
+        }
+
+        // Validate and fix enum values
+        let validatedCallQuality = callQuality;
+        if (callQuality) {
+            if (callQuality.audioQuality === 'Good') {
+                validatedCallQuality.audioQuality = 'Clear';
+            }
+        }
+
+        let validatedOutcome = outcome;
+        if (outcome) {
+            const outcomeMapping = {
+                'Follow-up': 'Follow-up Required',
+                'Follow up': 'Follow-up Required',
+                'Followup': 'Follow-up Required',
+                'Not Interested': 'Not Interested',
+                'Interested': 'Interested',
+                'Hot Lead': 'Hot Lead',
+                'Converted': 'Converted',
+                'Positive': 'Positive',
+                'Neutral': 'Neutral',
+                'Negative': 'Negative'
+            };
+            validatedOutcome = outcomeMapping[outcome] || 'Neutral';
+        }
+
+        // Create call log data
+        const logData = {
+            lead: leadId,
+            employee: req.user._id,
+            callStatus,
+            callStartTime: new Date(),
+            notes,
+            uploadedBy: req.user._id
+        };
+
+        // Add optional fields
+        if (simCardId) logData.simCard = simCardId;
+        if (callDuration !== undefined) logData.callDuration = callDuration;
+        if (validatedOutcome) logData.outcome = validatedOutcome;
+        if (followUpRequired !== undefined) logData.followUpRequired = followUpRequired;
+        if (followUpDate) logData.followUpDate = followUpDate;
+        if (validatedCallQuality) logData.callQuality = validatedCallQuality;
+        if (recordingFile) {
+            logData.recordingFile = recordingFile;
+            logData.recordingUrl = recordingUrl;
+            if (callDuration) logData.recordingDuration = callDuration;
+        }
+
+        console.log('Creating call log with recording:', JSON.stringify(logData, null, 2));
+
+        const log = await CallLog.create(logData);
+
+        // Populate response
+        const populatedLog = await CallLog.findById(log._id)
+            .populate('lead', 'name phone email status sector region')
+            .populate('employee', 'name email');
+
+        if (log.simCard) {
+            await populatedLog.populate('simCard', 'simNumber carrier');
+        }
+
+        res.status(201).json({
+            message: 'Call log with recording saved successfully',
+            log: populatedLog,
+            recordingUrl: recordingUrl
+        });
+
+    } catch (err) {
+        console.error('addCallLogWithRecording error:', err);
+        res.status(500).json({ error: 'Failed to save call log with recording', details: err.message });
+    }
+});
+
 module.exports = router;
 
 

@@ -484,6 +484,343 @@ router.get('/leads/analytics', async (req, res) => {
     }
 });
 
+// Get unfinished leads (status = "New")
+router.get('/leads/unfinished', async (req, res) => {
+    try {
+        const { managerId, assigned } = req.query;
+        const filter = { status: 'New' };
+
+        // Filter by manager ownership (createdBy)
+        if (managerId) {
+            filter.createdBy = managerId;
+        }
+        // Filter by assigned/unassigned
+        if (assigned === 'true') {
+            filter.assignedTo = { $ne: null };
+        } else if (assigned === 'false') {
+            filter.assignedTo = null;
+        }
+
+        const leads = await Lead.find(filter)
+            .populate('assignedTo', 'name email')
+            .populate('createdBy', 'name email')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            leads,
+            count: leads.length,
+            message: 'Unfinished leads retrieved successfully'
+        });
+    } catch (err) {
+        console.error('Get unfinished leads error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Get finished leads (status != "New")
+router.get('/leads/finished', async (req, res) => {
+    try {
+        const { managerId, assigned, status } = req.query;
+        const filter = { status: { $ne: 'New' } };
+
+        // Filter by manager ownership (createdBy)
+        if (managerId) {
+            filter.createdBy = managerId;
+        }
+        // Filter by assigned/unassigned
+        if (assigned === 'true') {
+            filter.assignedTo = { $ne: null };
+        } else if (assigned === 'false') {
+            filter.assignedTo = null;
+        }
+        // Filter by specific status
+        if (status) {
+            filter.status = status;
+        }
+
+        const leads = await Lead.find(filter)
+            .populate('assignedTo', 'name email')
+            .populate('createdBy', 'name email')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            leads,
+            count: leads.length,
+            message: 'Finished leads retrieved successfully'
+        });
+    } catch (err) {
+        console.error('Get finished leads error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Get dead leads (status = "Dead")
+router.get('/leads/dead', async (req, res) => {
+    try {
+        const { managerId, reason } = req.query;
+        const filter = { status: 'Dead' };
+
+        // Filter by manager ownership (createdBy)
+        if (managerId) {
+            filter.createdBy = managerId;
+        }
+        // Filter by dead lead reason
+        if (reason) {
+            filter.deadLeadReason = reason;
+        }
+
+        const leads = await Lead.find(filter)
+            .populate('assignedTo', 'name email')
+            .populate('createdBy', 'name email')
+            .sort({ deadLeadDate: -1 });
+
+        res.json({
+            leads,
+            count: leads.length,
+            message: 'Dead leads retrieved successfully'
+        });
+    } catch (err) {
+        console.error('Get dead leads error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Reactivate dead lead (change status back to New)
+router.put('/leads/:id/reactivate', async (req, res) => {
+    try {
+        const lead = await Lead.findById(req.params.id);
+        
+        if (!lead) {
+            return res.status(404).json({ error: 'Lead not found' });
+        }
+        
+        if (lead.status !== 'Dead') {
+            return res.status(400).json({ error: 'Lead is not dead' });
+        }
+        
+        // Reactivate the lead
+        lead.status = 'New';
+        lead.deadLeadReason = null;
+        lead.deadLeadDate = null;
+        lead.callAttempts = 0;
+        lead.lastCallAttempt = null;
+        
+        await lead.save();
+        
+        const updatedLead = await Lead.findById(lead._id)
+            .populate('assignedTo', 'name email')
+            .populate('createdBy', 'name email');
+        
+        res.json({
+            message: 'Lead reactivated successfully',
+            lead: updatedLead
+        });
+    } catch (err) {
+        console.error('Reactivate lead error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// ===== USER PERFORMANCE ANALYTICS =====
+// Get employee lead completion statistics
+router.get('/analytics/employee-performance', async (req, res) => {
+    try {
+        const employees = await User.find({ role: 'employee' })
+            .populate('manager', 'name email')
+            .select('name email manager createdAt');
+
+        const employeeStats = await Promise.all(employees.map(async (employee) => {
+            // Get all leads assigned to this employee
+            const assignedLeads = await Lead.find({ assignedTo: employee._id });
+            
+            // Get completed leads (status != 'New')
+            const completedLeads = assignedLeads.filter(lead => lead.status !== 'New');
+            
+            // Get pending leads (status = 'New')
+            const pendingLeads = assignedLeads.filter(lead => lead.status === 'New');
+            
+            // Get dead leads
+            const deadLeads = assignedLeads.filter(lead => lead.status === 'Dead');
+            
+            // Get won leads
+            const wonLeads = assignedLeads.filter(lead => lead.status === 'Won');
+            
+            // Get call logs for this employee
+            const callLogs = await CallLog.find({ employee: employee._id });
+            
+            // Calculate completion rate
+            const completionRate = assignedLeads.length > 0 ? 
+                ((completedLeads.length / assignedLeads.length) * 100).toFixed(1) : 0;
+            
+            // Calculate conversion rate
+            const conversionRate = assignedLeads.length > 0 ? 
+                ((wonLeads.length / assignedLeads.length) * 100).toFixed(1) : 0;
+
+            return {
+                employee: {
+                    _id: employee._id,
+                    name: employee.name,
+                    email: employee.email,
+                    manager: employee.manager
+                },
+                stats: {
+                    totalAssigned: assignedLeads.length,
+                    completed: completedLeads.length,
+                    pending: pendingLeads.length,
+                    dead: deadLeads.length,
+                    won: wonLeads.length,
+                    totalCalls: callLogs.length,
+                    completionRate: parseFloat(completionRate),
+                    conversionRate: parseFloat(conversionRate),
+                    avgCallsPerLead: assignedLeads.length > 0 ? 
+                        (callLogs.length / assignedLeads.length).toFixed(1) : 0
+                }
+            };
+        }));
+
+        res.json({
+            employeeStats,
+            summary: {
+                totalEmployees: employees.length,
+                totalAssignedLeads: employeeStats.reduce((sum, emp) => sum + emp.stats.totalAssigned, 0),
+                totalCompletedLeads: employeeStats.reduce((sum, emp) => sum + emp.stats.completed, 0),
+                totalPendingLeads: employeeStats.reduce((sum, emp) => sum + emp.stats.pending, 0),
+                totalDeadLeads: employeeStats.reduce((sum, emp) => sum + emp.stats.dead, 0),
+                totalWonLeads: employeeStats.reduce((sum, emp) => sum + emp.stats.won, 0),
+                avgCompletionRate: employeeStats.length > 0 ? 
+                    (employeeStats.reduce((sum, emp) => sum + emp.stats.completionRate, 0) / employeeStats.length).toFixed(1) : 0,
+                avgConversionRate: employeeStats.length > 0 ? 
+                    (employeeStats.reduce((sum, emp) => sum + emp.stats.conversionRate, 0) / employeeStats.length).toFixed(1) : 0
+            }
+        });
+    } catch (err) {
+        console.error('Employee performance analytics error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Get manager lead completion statistics
+router.get('/analytics/manager-performance', async (req, res) => {
+    try {
+        const managers = await User.find({ role: 'manager' })
+            .select('name email createdAt');
+
+        const managerStats = await Promise.all(managers.map(async (manager) => {
+            // Get all employees under this manager
+            const employees = await User.find({ manager: manager._id }).select('_id');
+            const employeeIds = employees.map(emp => emp._id);
+            
+            // Get leads created by this manager
+            const createdLeads = await Lead.find({ createdBy: manager._id });
+            
+            // Get leads assigned to manager's team
+            const teamLeads = await Lead.find({ 
+                assignedTo: { $in: employeeIds } 
+            });
+            
+            // Get all leads under this manager (created + team assigned)
+            const allLeads = await Lead.find({
+                $or: [
+                    { createdBy: manager._id },
+                    { assignedTo: { $in: employeeIds } }
+                ]
+            });
+            
+            // Calculate statistics
+            const completedLeads = allLeads.filter(lead => lead.status !== 'New');
+            const pendingLeads = allLeads.filter(lead => lead.status === 'New');
+            const deadLeads = allLeads.filter(lead => lead.status === 'Dead');
+            const wonLeads = allLeads.filter(lead => lead.status === 'Won');
+            
+            // Get team call logs
+            const teamCallLogs = await CallLog.find({ 
+                employee: { $in: employeeIds } 
+            });
+            
+            // Calculate rates
+            const completionRate = allLeads.length > 0 ? 
+                ((completedLeads.length / allLeads.length) * 100).toFixed(1) : 0;
+            
+            const conversionRate = allLeads.length > 0 ? 
+                ((wonLeads.length / allLeads.length) * 100).toFixed(1) : 0;
+
+            return {
+                manager: {
+                    _id: manager._id,
+                    name: manager.name,
+                    email: manager.email
+                },
+                stats: {
+                    totalLeads: allLeads.length,
+                    createdLeads: createdLeads.length,
+                    teamAssignedLeads: teamLeads.length,
+                    completed: completedLeads.length,
+                    pending: pendingLeads.length,
+                    dead: deadLeads.length,
+                    won: wonLeads.length,
+                    teamSize: employees.length,
+                    totalTeamCalls: teamCallLogs.length,
+                    completionRate: parseFloat(completionRate),
+                    conversionRate: parseFloat(conversionRate),
+                    avgCallsPerLead: allLeads.length > 0 ? 
+                        (teamCallLogs.length / allLeads.length).toFixed(1) : 0
+                }
+            };
+        }));
+
+        res.json({
+            managerStats,
+            summary: {
+                totalManagers: managers.length,
+                totalLeads: managerStats.reduce((sum, mgr) => sum + mgr.stats.totalLeads, 0),
+                totalCompletedLeads: managerStats.reduce((sum, mgr) => sum + mgr.stats.completed, 0),
+                totalPendingLeads: managerStats.reduce((sum, mgr) => sum + mgr.stats.pending, 0),
+                totalDeadLeads: managerStats.reduce((sum, mgr) => sum + mgr.stats.dead, 0),
+                totalWonLeads: managerStats.reduce((sum, mgr) => sum + mgr.stats.won, 0),
+                totalTeamSize: managerStats.reduce((sum, mgr) => sum + mgr.stats.teamSize, 0),
+                avgCompletionRate: managerStats.length > 0 ? 
+                    (managerStats.reduce((sum, mgr) => sum + mgr.stats.completionRate, 0) / managerStats.length).toFixed(1) : 0,
+                avgConversionRate: managerStats.length > 0 ? 
+                    (managerStats.reduce((sum, mgr) => sum + mgr.stats.conversionRate, 0) / managerStats.length).toFixed(1) : 0
+            }
+        });
+    } catch (err) {
+        console.error('Manager performance analytics error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Get combined user performance overview
+router.get('/analytics/user-performance-overview', async (req, res) => {
+    try {
+        const [employeeResponse, managerResponse] = await Promise.all([
+            fetch(`${req.protocol}://${req.get('host')}/api/admin/analytics/employee-performance`),
+            fetch(`${req.protocol}://${req.get('host')}/api/admin/analytics/manager-performance`)
+        ]);
+
+        const employeeData = await employeeResponse.json();
+        const managerData = await managerResponse.json();
+
+        res.json({
+            employees: employeeData,
+            managers: managerData,
+            overview: {
+                totalUsers: employeeData.summary.totalEmployees + managerData.summary.totalManagers,
+                totalLeads: employeeData.summary.totalAssignedLeads + managerData.summary.totalLeads,
+                totalCompleted: employeeData.summary.totalCompletedLeads + managerData.summary.totalCompletedLeads,
+                totalPending: employeeData.summary.totalPendingLeads + managerData.summary.totalPendingLeads,
+                totalDead: employeeData.summary.totalDeadLeads + managerData.summary.totalDeadLeads,
+                totalWon: employeeData.summary.totalWonLeads + managerData.summary.totalWonLeads,
+                overallCompletionRate: ((employeeData.summary.totalCompletedLeads + managerData.summary.totalCompletedLeads) / 
+                    (employeeData.summary.totalAssignedLeads + managerData.summary.totalLeads) * 100).toFixed(1)
+            }
+        });
+    } catch (err) {
+        console.error('User performance overview error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
 // ===== SALES ANALYTICS =====
 // Total number of sales (won deals) by region and sector, plus total value by region/sector
 router.get('/sales/analytics', async (req, res) => {
@@ -529,6 +866,103 @@ router.get('/sales/analytics', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Server error', details: err.message });
   }
+});
+
+// ===== CALL RECORDS MANAGEMENT =====
+// Get all call records with employee details
+router.get('/call-records', async (req, res) => {
+    try {
+        const callRecords = await CallLog.find()
+            .populate('lead', 'name phone email status sector region')
+            .populate('employee', 'name email role')
+            .populate('simCard', 'simNumber carrier')
+            .sort({ createdAt: -1 });
+
+        res.json(callRecords);
+    } catch (err) {
+        console.error('Call records error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Get call records analytics
+router.get('/call-records/analytics', async (req, res) => {
+    try {
+        const callRecords = await CallLog.find()
+            .populate('employee', 'name email')
+            .populate('lead', 'sector region');
+
+        // Call status distribution
+        const statusDistribution = callRecords.reduce((acc, record) => {
+            acc[record.callStatus] = (acc[record.callStatus] || 0) + 1;
+            return acc;
+        }, {});
+
+        // Calls by employee
+        const callsByEmployee = callRecords.reduce((acc, record) => {
+            const empName = record.employee?.name || 'Unknown';
+            if (!acc[empName]) {
+                acc[empName] = {
+                    totalCalls: 0,
+                    completedCalls: 0,
+                    totalDuration: 0,
+                    successRate: 0
+                };
+            }
+            acc[empName].totalCalls++;
+            if (record.callStatus === 'completed') {
+                acc[empName].completedCalls++;
+            }
+            acc[empName].totalDuration += record.callDuration || 0;
+            return acc;
+        }, {});
+
+        // Calculate success rates
+        Object.keys(callsByEmployee).forEach(emp => {
+            const empData = callsByEmployee[emp];
+            empData.successRate = empData.totalCalls > 0 ? 
+                Math.round((empData.completedCalls / empData.totalCalls) * 100) : 0;
+            empData.avgDuration = empData.totalCalls > 0 ? 
+                Math.round(empData.totalDuration / empData.totalCalls) : 0;
+        });
+
+        // Calls by hour
+        const callsByHour = callRecords.reduce((acc, record) => {
+            const hour = new Date(record.createdAt).getHours();
+            acc[hour] = (acc[hour] || 0) + 1;
+            return acc;
+        }, {});
+
+        // Calls by day of week
+        const callsByDay = callRecords.reduce((acc, record) => {
+            const day = new Date(record.createdAt).toLocaleDateString('en-US', { weekday: 'long' });
+            acc[day] = (acc[day] || 0) + 1;
+            return acc;
+        }, {});
+
+        // Quality metrics
+        const qualityMetrics = {
+            excellentSignal: callRecords.filter(r => r.callQuality?.signalStrength === 'Excellent').length,
+            goodSignal: callRecords.filter(r => r.callQuality?.signalStrength === 'Good').length,
+            crystalClearAudio: callRecords.filter(r => r.callQuality?.audioQuality === 'Crystal Clear').length,
+            clearAudio: callRecords.filter(r => r.callQuality?.audioQuality === 'Clear').length
+        };
+
+        res.json({
+            totalCalls: callRecords.length,
+            statusDistribution,
+            callsByEmployee,
+            callsByHour,
+            callsByDay,
+            qualityMetrics,
+            totalDuration: callRecords.reduce((sum, r) => sum + (r.callDuration || 0), 0),
+            avgCallDuration: callRecords.length > 0 ? 
+                Math.round(callRecords.reduce((sum, r) => sum + (r.callDuration || 0), 0) / callRecords.length) : 0
+        });
+    } catch (err) {
+        console.error('Call records analytics error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
 });
 
 // ===== CAMPAIGN MANAGEMENT =====

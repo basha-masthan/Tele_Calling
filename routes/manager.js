@@ -4,6 +4,7 @@ const router = express.Router();
 const Lead = require('../models/Lead');
 const User = require('../models/User');
 const Campaign = require('../models/Campaign');
+const CallLog = require('../models/CallLog');
 const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
 
@@ -95,6 +96,43 @@ router.get('/leads', async (req, res) => {
     }
 });
 
+// Get leads for assignment purposes (leads assigned to manager by admin + leads assigned to manager's team)
+router.get('/leads/for-assignment', async (req, res) => {
+    try {
+        const managerId = req.user.id;
+        const { status } = req.query;
+        
+        // Get all employees under this manager
+        const employees = await User.find({ manager: managerId }).select('_id name');
+        const employeeIds = employees.map(emp => emp._id);
+        
+        // Build query to get leads that manager can assign to employees:
+        // 1. Leads assigned to this manager by admin (createdBy = managerId)
+        // 2. Leads already assigned to manager's team employees
+        let query = {
+            $or: [
+                { createdBy: managerId }, // Leads assigned to manager by admin
+                { assignedTo: { $in: employeeIds } } // Leads already assigned to manager's team
+            ]
+        };
+        
+        if (status) {
+            query.status = status;
+        }
+
+        // Get leads for assignment
+        const leads = await Lead.find(query)
+        .select('name phone email status notes followUpDate assignedTo createdBy sellingPrice lossReason reassignmentDate createdAt sector region')
+        .populate('assignedTo', 'name email')
+        .populate('createdBy', 'name email')
+        .sort({ createdAt: -1 });
+
+        res.json(leads);
+    } catch (err) {
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
 // Convenience endpoint: only leads assigned to this manager's team
 router.get('/leads/assigned', async (req, res) => {
     try {
@@ -111,6 +149,8 @@ router.get('/leads/assigned', async (req, res) => {
         res.status(500).json({ error: 'Server error', details: err.message });
     }
 });
+
+
 
 // Get lead analytics for manager's team
 router.get('/leads/analytics', async (req, res) => {
@@ -291,6 +331,179 @@ router.put('/leads/:id', async (req, res) => {
     }
 });
 
+// Get unfinished leads (status = "New") for manager's team
+router.get('/leads/unfinished', async (req, res) => {
+    try {
+        const managerId = req.user.id;
+        const { assigned } = req.query;
+        
+        // Get all employees under this manager
+        const employees = await User.find({ manager: managerId }).select('_id name');
+        const employeeIds = employees.map(emp => emp._id);
+        
+        // Build query for unfinished leads
+        let query = { 
+            status: 'New',
+            $or: [
+                { createdBy: managerId },
+                { assignedTo: { $in: employeeIds } }
+            ]
+        };
+        
+        // Filter by assigned/unassigned
+        if (assigned === 'true') {
+            query.assignedTo = { $in: employeeIds };
+        } else if (assigned === 'false') {
+            query.assignedTo = null;
+        }
+
+        const leads = await Lead.find(query)
+            .select('name phone email status notes followUpDate assignedTo createdBy sellingPrice lossReason reassignmentDate createdAt sector region')
+            .populate('assignedTo', 'name email')
+            .populate('createdBy', 'name email')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            leads,
+            count: leads.length,
+            message: 'Unfinished leads retrieved successfully'
+        });
+    } catch (err) {
+        console.error('Get unfinished leads error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Get finished leads (status != "New") for manager's team
+router.get('/leads/finished', async (req, res) => {
+    try {
+        const managerId = req.user.id;
+        const { assigned, status } = req.query;
+        
+        // Get all employees under this manager
+        const employees = await User.find({ manager: managerId }).select('_id name');
+        const employeeIds = employees.map(emp => emp._id);
+        
+        // Build query for finished leads
+        let query = { 
+            status: { $ne: 'New' },
+            $or: [
+                { createdBy: managerId },
+                { assignedTo: { $in: employeeIds } }
+            ]
+        };
+        
+        // Filter by assigned/unassigned
+        if (assigned === 'true') {
+            query.assignedTo = { $in: employeeIds };
+        } else if (assigned === 'false') {
+            query.assignedTo = null;
+        }
+        
+        // Filter by specific status
+        if (status) {
+            query.status = status;
+        }
+
+        const leads = await Lead.find(query)
+            .select('name phone email status notes followUpDate assignedTo createdBy sellingPrice lossReason reassignmentDate createdAt sector region')
+            .populate('assignedTo', 'name email')
+            .populate('createdBy', 'name email')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            leads,
+            count: leads.length,
+            message: 'Finished leads retrieved successfully'
+        });
+    } catch (err) {
+        console.error('Get finished leads error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Get dead leads for manager's team
+router.get('/leads/dead', async (req, res) => {
+    try {
+        const managerId = req.user.id;
+        const { reason } = req.query;
+        
+        // Get all employees under this manager
+        const employees = await User.find({ manager: managerId }).select('_id name');
+        const employeeIds = employees.map(emp => emp._id);
+        
+        // Build query for dead leads
+        let query = { 
+            status: 'Dead',
+            $or: [
+                { createdBy: managerId },
+                { assignedTo: { $in: employeeIds } }
+            ]
+        };
+        
+        // Filter by dead lead reason
+        if (reason) {
+            query.deadLeadReason = reason;
+        }
+
+        const leads = await Lead.find(query)
+            .select('name phone email status notes followUpDate assignedTo createdBy sellingPrice lossReason reassignmentDate createdAt sector region deadLeadReason deadLeadDate callAttempts lastCallAttempt')
+            .populate('assignedTo', 'name email')
+            .populate('createdBy', 'name email')
+            .sort({ deadLeadDate: -1 });
+
+        res.json({
+            leads,
+            count: leads.length,
+            message: 'Dead leads retrieved successfully'
+        });
+    } catch (err) {
+        console.error('Get dead leads error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Reactivate dead lead (manager can only reactivate their own leads)
+router.put('/leads/:id/reactivate', async (req, res) => {
+    try {
+        const lead = await Lead.findById(req.params.id);
+        
+        if (!lead) {
+            return res.status(404).json({ error: 'Lead not found' });
+        }
+        
+        if (lead.status !== 'Dead') {
+            return res.status(400).json({ error: 'Lead is not dead' });
+        }
+        
+        // Check if manager has permission to reactivate this lead
+        if (lead.createdBy.toString() !== req.user.id.toString()) {
+            return res.status(403).json({ error: 'Not authorized to reactivate this lead' });
+        }
+        
+        // Reactivate the lead
+        lead.status = 'New';
+        lead.deadLeadReason = null;
+        lead.deadLeadDate = null;
+        lead.callAttempts = 0;
+        lead.lastCallAttempt = null;
+        
+        await lead.save();
+        
+        const updatedLead = await Lead.findById(lead._id)
+            .populate('assignedTo', 'name email')
+            .populate('createdBy', 'name email');
+        
+        res.json({
+            message: 'Lead reactivated successfully',
+            lead: updatedLead
+        });
+    } catch (err) {
+        console.error('Reactivate lead error:', err);
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
 // ===== CAMPAIGN MANAGEMENT =====
 // Get campaigns created by manager
 router.get('/campaigns', async (req, res) => {
@@ -324,6 +537,106 @@ router.post('/campaigns', async (req, res) => {
         res.status(201).json({ message: 'Campaign created successfully', campaign });
     } catch (err) {
         res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// ===== CALL RECORDS =====
+// Get call records for manager's team
+router.get('/call-records', async (req, res) => {
+    try {
+        const managerId = req.user.id;
+        
+        // Get all employees under this manager
+        const employees = await User.find({ manager: managerId }).select('_id');
+        const employeeIds = employees.map(emp => emp._id);
+        
+        const callRecords = await CallLog.find({ employee: { $in: employeeIds } })
+            .populate('lead', 'name phone email status sector region')
+            .populate('employee', 'name email role')
+            .populate('simCard', 'simNumber carrier')
+            .sort({ createdAt: -1 });
+        
+        res.json(callRecords);
+    } catch (err) {
+        console.error('getManagerCallRecords error:', err);
+        res.status(500).json({ error: 'Failed to fetch call records', details: err.message });
+    }
+});
+
+// Get call records analytics for manager's team
+router.get('/call-records/analytics', async (req, res) => {
+    try {
+        const managerId = req.user.id;
+        
+        // Get all employees under this manager
+        const employees = await User.find({ manager: managerId }).select('_id');
+        const employeeIds = employees.map(emp => emp._id);
+        
+        const callRecords = await CallLog.find({ employee: { $in: employeeIds } })
+            .populate('employee', 'name email')
+            .populate('lead', 'sector region');
+        
+        // Call status distribution
+        const statusDistribution = callRecords.reduce((acc, record) => {
+            acc[record.callStatus] = (acc[record.callStatus] || 0) + 1;
+            return acc;
+        }, {});
+        
+        // Calls by employee
+        const callsByEmployee = callRecords.reduce((acc, record) => {
+            const empName = record.employee?.name || 'Unknown';
+            if (!acc[empName]) {
+                acc[empName] = {
+                    totalCalls: 0,
+                    completedCalls: 0,
+                    totalDuration: 0,
+                    successRate: 0
+                };
+            }
+            acc[empName].totalCalls++;
+            if (record.callStatus === 'completed') {
+                acc[empName].completedCalls++;
+            }
+            acc[empName].totalDuration += record.callDuration || 0;
+            return acc;
+        }, {});
+        
+        // Calculate success rates
+        Object.keys(callsByEmployee).forEach(emp => {
+            const empData = callsByEmployee[emp];
+            empData.successRate = empData.totalCalls > 0 ? 
+                Math.round((empData.completedCalls / empData.totalCalls) * 100) : 0;
+            empData.avgDuration = empData.totalCalls > 0 ? 
+                Math.round(empData.totalDuration / empData.totalCalls) : 0;
+        });
+        
+        // Calls by hour
+        const callsByHour = callRecords.reduce((acc, record) => {
+            const hour = new Date(record.createdAt).getHours();
+            acc[hour] = (acc[hour] || 0) + 1;
+            return acc;
+        }, {});
+        
+        // Calls by day of week
+        const callsByDay = callRecords.reduce((acc, record) => {
+            const day = new Date(record.createdAt).toLocaleDateString('en-US', { weekday: 'long' });
+            acc[day] = (acc[day] || 0) + 1;
+            return acc;
+        }, {});
+        
+        res.json({
+            totalCalls: callRecords.length,
+            statusDistribution,
+            callsByEmployee,
+            callsByHour,
+            callsByDay,
+            totalDuration: callRecords.reduce((sum, r) => sum + (r.callDuration || 0), 0),
+            avgCallDuration: callRecords.length > 0 ? 
+                Math.round(callRecords.reduce((sum, r) => sum + (r.callDuration || 0), 0) / callRecords.length) : 0
+        });
+    } catch (err) {
+        console.error('getManagerCallRecordsAnalytics error:', err);
+        res.status(500).json({ error: 'Failed to fetch call records analytics', details: err.message });
     }
 });
 

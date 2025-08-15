@@ -4,7 +4,7 @@ const leadSchema = new mongoose.Schema({
     name: { type: String, required: true },
     phone: { type: String, required: true },
     email: { type: String },
-    status: { type: String, default: 'New' }, // New, Interested, Hot, Follow-up, Won, Lost
+    status: { type: String, default: 'New' }, // New, Interested, Hot, Follow-up, Won, Lost, Dead
     notes: { type: String },
     recordingUrl: { type: String }, // URL of uploaded audio
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // employee assigned
@@ -14,6 +14,11 @@ const leadSchema = new mongoose.Schema({
     sellingPrice: { type: Number }, // Price when lead is won
     lossReason: { type: String }, // Reason when lead is lost
     reassignmentDate: { type: Date }, // Date when lead should be reassigned (for lost leads)
+    // Dead lead tracking
+    deadLeadReason: { type: String, enum: ['Wrong Number', 'Switched Off', 'Not Interested', 'Other'] },
+    deadLeadDate: { type: Date },
+    lastCallAttempt: { type: Date },
+    callAttempts: { type: Number, default: 0 },
     // New fields for analytics
     sector: { type: String, enum: ['Technology', 'Healthcare', 'Finance', 'Education', 'Retail', 'Manufacturing', 'Real Estate', 'Other'], default: 'Other' },
     region: { type: String, enum: [
