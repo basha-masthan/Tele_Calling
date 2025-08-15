@@ -5,7 +5,10 @@ const Lead = require('../models/Lead');
 const Campaign = require('../models/Campaign');
 const SimCard = require('../models/SimCard');
 const CallLog = require('../models/CallLog');
+const SalesPipeline = require('../models/SalesPipeline');
 const AdminController = require('../controllers/adminController');
+const CampaignController = require('../controllers/campaignController');
+const PipelineController = require('../controllers/pipelineController');
 const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
 
@@ -161,10 +164,28 @@ router.delete('/users/:id', async (req, res) => {
 });
 
 // ===== LEAD MANAGEMENT =====
-// Get all leads
+// Get all leads (with optional filters: managerId, status, assigned=true|false)
 router.get('/leads', async (req, res) => {
     try {
-        const leads = await Lead.find()
+        const { managerId, status, assigned } = req.query;
+        const filter = {};
+
+        // Filter by manager ownership (createdBy)
+        if (managerId) {
+            filter.createdBy = managerId;
+        }
+        // Filter by status
+        if (status) {
+            filter.status = status;
+        }
+        // Filter by assigned/unassigned
+        if (assigned === 'true') {
+            filter.assignedTo = { $ne: null };
+        } else if (assigned === 'false') {
+            filter.assignedTo = null;
+        }
+
+        const leads = await Lead.find(filter)
             .populate('assignedTo', 'name email')
             .populate('createdBy', 'name email')
             .sort({ createdAt: -1 });
@@ -174,8 +195,41 @@ router.get('/leads', async (req, res) => {
     }
 });
 
-// Get single lead by ID
-router.get('/leads/:id', async (req, res) => {
+// Bulk assign leads to a manager (make manager the owner/creator)
+router.post('/leads/assign-manager', async (req, res) => {
+    try {
+        const { managerId, leadIds, clearAssignments } = req.body;
+
+        if (!managerId || !Array.isArray(leadIds) || leadIds.length === 0) {
+            return res.status(400).json({ error: 'managerId and leadIds[] are required' });
+        }
+
+        // Verify manager exists and has correct role
+        const manager = await User.findById(managerId);
+        if (!manager || manager.role !== 'manager') {
+            return res.status(400).json({ error: 'Invalid manager ID' });
+        }
+
+        const update = { createdBy: managerId };
+        if (clearAssignments) update.assignedTo = null;
+
+        const result = await Lead.updateMany(
+            { _id: { $in: leadIds } },
+            { $set: update }
+        );
+
+        res.json({
+            message: 'Leads assigned to manager successfully',
+            matched: result.matchedCount ?? result.n,
+            modified: result.modifiedCount ?? result.nModified
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Get single lead by ID (only match valid ObjectId)
+router.get('/leads/:id([0-9a-fA-F]{24})', async (req, res) => {
     try {
         const lead = await Lead.findById(req.params.id)
             .populate('assignedTo', 'name email')
@@ -327,75 +381,91 @@ router.delete('/leads/:id', async (req, res) => {
 router.get('/leads/analytics', async (req, res) => {
     try {
         const leads = await Lead.find();
-        
+
+        const safeKey = (v, fallback) => (v && typeof v === 'string' ? v : fallback);
+        const isValidDate = (d) => {
+            const dt = new Date(d);
+            return !isNaN(dt.getTime());
+        };
+
         // Status distribution
         const statusDistribution = leads.reduce((acc, lead) => {
-            acc[lead.status] = (acc[lead.status] || 0) + 1;
+            const key = safeKey(lead.status, 'Unknown');
+            acc[key] = (acc[key] || 0) + 1;
             return acc;
         }, {});
-        
+
         // Sector distribution
         const sectorDistribution = leads.reduce((acc, lead) => {
-            acc[lead.sector] = (acc[lead.sector] || 0) + 1;
+            const key = safeKey(lead.sector, 'Other');
+            acc[key] = (acc[key] || 0) + 1;
             return acc;
         }, {});
-        
+
         // Region distribution
         const regionDistribution = leads.reduce((acc, lead) => {
-            acc[lead.region] = (acc[lead.region] || 0) + 1;
+            const key = safeKey(lead.region, 'Unknown');
+            acc[key] = (acc[key] || 0) + 1;
             return acc;
         }, {});
-        
+
         // Hot leads by sector
         const hotLeadsBySector = leads
             .filter(lead => lead.status === 'Hot')
             .reduce((acc, lead) => {
-                acc[lead.sector] = (acc[lead.sector] || 0) + 1;
+                const key = safeKey(lead.sector, 'Other');
+                acc[key] = (acc[key] || 0) + 1;
                 return acc;
             }, {});
-        
+
         // Interested leads by sector
         const interestedLeadsBySector = leads
             .filter(lead => lead.status === 'Interested')
             .reduce((acc, lead) => {
-                acc[lead.sector] = (acc[lead.sector] || 0) + 1;
+                const key = safeKey(lead.sector, 'Other');
+                acc[key] = (acc[key] || 0) + 1;
                 return acc;
             }, {});
-        
+
         // Hot leads by region
         const hotLeadsByRegion = leads
             .filter(lead => lead.status === 'Hot')
             .reduce((acc, lead) => {
-                acc[lead.region] = (acc[lead.region] || 0) + 1;
+                const key = safeKey(lead.region, 'Unknown');
+                acc[key] = (acc[key] || 0) + 1;
                 return acc;
             }, {});
-        
+
         // Interested leads by region
         const interestedLeadsByRegion = leads
             .filter(lead => lead.status === 'Interested')
             .reduce((acc, lead) => {
-                acc[lead.region] = (acc[lead.region] || 0) + 1;
+                const key = safeKey(lead.region, 'Unknown');
+                acc[key] = (acc[key] || 0) + 1;
                 return acc;
             }, {});
-        
-        // Monthly lead creation trend
+
+        // Monthly lead creation trend (skip invalid dates)
         const monthlyLeadTrend = leads.reduce((acc, lead) => {
-            const month = new Date(lead.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' });
+            if (!isValidDate(lead.createdAt)) return acc;
+            const month = new Date(lead.createdAt).toLocaleString('en-US', { month: 'long', year: 'numeric' });
             acc[month] = (acc[month] || 0) + 1;
             return acc;
         }, {});
-        
-        // Sector-Region matrix for hot leads
+
+        // Sector-Region matrix for hot and interested leads
         const sectorRegionMatrix = leads
             .filter(lead => lead.status === 'Hot' || lead.status === 'Interested')
             .reduce((acc, lead) => {
-                if (!acc[lead.sector]) acc[lead.sector] = {};
-                if (!acc[lead.sector][lead.region]) acc[lead.sector][lead.region] = { hot: 0, interested: 0 };
-                if (lead.status === 'Hot') acc[lead.sector][lead.region].hot++;
-                if (lead.status === 'Interested') acc[lead.sector][lead.region].interested++;
+                const sector = safeKey(lead.sector, 'Other');
+                const region = safeKey(lead.region, 'Unknown');
+                if (!acc[sector]) acc[sector] = {};
+                if (!acc[sector][region]) acc[sector][region] = { hot: 0, interested: 0 };
+                if (lead.status === 'Hot') acc[sector][region].hot++;
+                if (lead.status === 'Interested') acc[sector][region].interested++;
                 return acc;
             }, {});
-        
+
         res.json({
             statusDistribution,
             sectorDistribution,
@@ -409,207 +479,134 @@ router.get('/leads/analytics', async (req, res) => {
             totalLeads: leads.length
         });
     } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// Create new lead
-router.post('/leads', async (req, res) => {
-    try {
-        const leadData = {
-            ...req.body,
-            createdBy: req.user.id
-        };
-        
-        const lead = new Lead(leadData);
-        await lead.save();
-        
-        const populatedLead = await Lead.findById(lead._id)
-            .populate('assignedTo', 'name email')
-            .populate('createdBy', 'name email');
-        
-        res.status(201).json({ message: 'Lead created successfully', lead: populatedLead });
-    } catch (err) {
+        console.error('Lead analytics error', err);
         res.status(500).json({ error: 'Server error', details: err.message });
     }
 });
 
-// Update lead
-router.put('/leads/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updates = req.body;
-        
-        const lead = await Lead.findById(id);
-        if (!lead) {
-            return res.status(404).json({ error: 'Lead not found' });
-        }
-        
-        // Update lead fields
-        Object.keys(updates).forEach(key => {
-            if (key !== '_id' && key !== 'createdAt' && key !== 'updatedAt') {
-                lead[key] = updates[key];
-            }
-        });
-        
-        await lead.save();
-        
-        const updatedLead = await Lead.findById(id)
-            .populate('assignedTo', 'name email')
-            .populate('createdBy', 'name email');
-        
-        res.json({ message: 'Lead updated successfully', lead: updatedLead });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error', details: err.message });
-    }
-});
+// ===== SALES ANALYTICS =====
+// Total number of sales (won deals) by region and sector, plus total value by region/sector
+router.get('/sales/analytics', async (req, res) => {
+  try {
+    const leads = await Lead.find({ status: 'Won' }).select('region sector sellingPrice');
 
-// Delete lead
-router.delete('/leads/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        const lead = await Lead.findById(id);
-        if (!lead) {
-            return res.status(404).json({ error: 'Lead not found' });
-        }
-        
-        await Lead.findByIdAndDelete(id);
-        res.json({ message: 'Lead deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error', details: err.message });
-    }
+    const safeKey = (v, fallback) => (v && typeof v === 'string' ? v : fallback);
+
+    const salesCountByRegion = leads.reduce((acc, l) => {
+      const key = safeKey(l.region, 'Unknown');
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const salesCountBySector = leads.reduce((acc, l) => {
+      const key = safeKey(l.sector, 'Other');
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const salesValueByRegion = leads.reduce((acc, l) => {
+      const key = safeKey(l.region, 'Unknown');
+      const val = Number(l.sellingPrice) || 0;
+      acc[key] = (acc[key] || 0) + val;
+      return acc;
+    }, {});
+
+    const salesValueBySector = leads.reduce((acc, l) => {
+      const key = safeKey(l.sector, 'Other');
+      const val = Number(l.sellingPrice) || 0;
+      acc[key] = (acc[key] || 0) + val;
+      return acc;
+    }, {});
+
+    res.json({
+      salesCountByRegion,
+      salesCountBySector,
+      salesValueByRegion,
+      salesValueBySector,
+      totalWonDeals: leads.length,
+      totalSalesValue: leads.reduce((s, l) => s + (Number(l.sellingPrice) || 0), 0)
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error', details: err.message });
+  }
 });
 
 // ===== CAMPAIGN MANAGEMENT =====
-// Get campaign analytics
-router.get('/campaigns', async (req, res) => {
-    try {
-        const campaigns = await Campaign.find()
-            .populate('createdBy', 'name email')
-            .populate('assignedTo', 'name email')
-            .sort({ createdAt: -1 });
-        res.json(campaigns);
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
+// Get all campaigns
+router.get('/campaigns', CampaignController.getCampaigns);
+
+// Get single campaign
+router.get('/campaigns/:id', CampaignController.getCampaign);
 
 // Create new campaign
-router.post('/campaigns', async (req, res) => {
-    try {
-        const campaignData = {
-            ...req.body,
-            createdBy: req.user.id,
-            metrics: {
-                reach: 0,
-                impressions: 0,
-                clicks: 0,
-                conversions: 0,
-                engagementRate: 0,
-                conversionRate: 0,
-                ctr: 0,
-                roi: 0,
-                cost: 0,
-                revenue: 0
-            },
-            performance: {
-                dailyStats: [],
-                audienceInsights: {
-                    demographics: {
-                        ageGroups: new Map(),
-                        locations: new Map(),
-                        interests: []
-                    },
-                    behavior: {
-                        engagementTime: 0,
-                        bounceRate: 0,
-                        returnRate: 0
-                    }
-                }
-            },
-            abTesting: {
-                enabled: false,
-                results: {
-                    variantA: {
-                        impressions: 0,
-                        clicks: 0,
-                        conversions: 0,
-                        ctr: 0,
-                        conversionRate: 0
-                    },
-                    variantB: {
-                        impressions: 0,
-                        clicks: 0,
-                        conversions: 0,
-                        ctr: 0,
-                        conversionRate: 0
-                    },
-                    winner: null
-                }
-            }
-        };
+router.post('/campaigns', CampaignController.createCampaign);
 
-        const campaign = new Campaign(campaignData);
-        await campaign.save();
+// Update campaign
+router.put('/campaigns/:id', CampaignController.updateCampaign);
 
-        const populatedCampaign = await Campaign.findById(campaign._id)
-            .populate('createdBy', 'name email')
-            .populate('assignedTo', 'name email');
+// Delete campaign
+router.delete('/campaigns/:id', CampaignController.deleteCampaign);
 
-        res.status(201).json(populatedCampaign);
-    } catch (err) {
-        res.status(500).json({ error: 'Server error', details: err.message });
-    }
-});
+// Get campaign analytics
+router.get('/campaigns/:id/analytics', CampaignController.getCampaignAnalytics);
 
-// Get campaign performance analytics
-router.get('/campaigns/analytics', async (req, res) => {
-    try {
-        const campaigns = await Campaign.find();
-        
-        // Campaign status distribution
-        const statusDistribution = campaigns.reduce((acc, campaign) => {
-            acc[campaign.status] = (acc[campaign.status] || 0) + 1;
-            return acc;
-        }, {});
-        
-        // Campaign type distribution
-        const typeDistribution = campaigns.reduce((acc, campaign) => {
-            acc[campaign.campaignType] = (acc[campaign.campaignType] || 0) + 1;
-            return acc;
-        }, {});
-        
-        // Monthly campaign creation trend
-        const monthlyTrend = campaigns.reduce((acc, campaign) => {
-            const month = new Date(campaign.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' });
-            acc[month] = (acc[month] || 0) + 1;
-            return acc;
-        }, {});
-        
-        // Campaign performance metrics
-        const performanceMetrics = campaigns.map(campaign => ({
-            id: campaign._id,
-            name: campaign.name,
-            impressions: campaign.metrics.impressions,
-            clicks: campaign.metrics.clicks,
-            conversions: campaign.metrics.conversions,
-            ctr: campaign.metrics.ctr,
-            conversionRate: campaign.metrics.conversionRate,
-            roi: campaign.metrics.roi
-        }));
-        
-        res.json({
-            statusDistribution,
-            typeDistribution,
-            monthlyTrend,
-            performanceMetrics,
-            totalCampaigns: campaigns.length
-        });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
+// Get comprehensive campaign analytics for admin
+router.get('/campaigns/analytics/admin', CampaignController.getCampaignAnalyticsAdmin);
+
+// Update campaign metrics
+router.put('/campaigns/:campaignId/metrics', CampaignController.updateCampaignMetrics);
+
+// Get campaign performance
+router.get('/campaigns/performance/summary', CampaignController.getCampaignPerformance);
+
+// Toggle A/B testing
+router.put('/campaigns/:campaignId/ab-testing', CampaignController.toggleABTesting);
+
+// Get campaign insights
+router.get('/campaigns/insights', CampaignController.getCampaignInsights);
+
+// ===== PIPELINE MANAGEMENT =====
+// Get all pipelines
+router.get('/pipelines', PipelineController.getPipelines);
+
+// Get single pipeline
+router.get('/pipelines/:id', PipelineController.getPipeline);
+
+// Create new pipeline
+router.post('/pipelines', PipelineController.createPipeline);
+
+// Update pipeline
+router.put('/pipelines/:id', PipelineController.updatePipeline);
+
+// Delete pipeline
+router.delete('/pipelines/:id', PipelineController.deletePipeline);
+
+// Add stage to pipeline
+router.post('/pipelines/:id/stages', PipelineController.addStage);
+
+// Update stage
+router.put('/pipelines/:id/stages/:stageId', PipelineController.updateStage);
+
+// Delete stage
+router.delete('/pipelines/:id/stages/:stageId', PipelineController.deleteStage);
+
+// Reorder stages
+router.put('/pipelines/:id/stages/reorder', PipelineController.reorderStages);
+
+// Get pipeline analytics
+router.get('/pipelines/:id/analytics', PipelineController.getPipelineAnalytics);
+
+// Get comprehensive pipeline analytics for admin
+router.get('/pipelines/analytics/admin', PipelineController.getPipelineAnalyticsAdmin);
+
+// Assign leads to pipeline
+router.post('/pipelines/:id/assign-leads', PipelineController.assignLeadsToPipeline);
+
+// Get leads in pipeline
+router.get('/pipelines/:id/leads', PipelineController.getPipelineLeads);
+
+// Get pipeline insights
+router.get('/pipelines/insights', PipelineController.getPipelineInsights);
 
 // ===== SIM MANAGEMENT =====
 // Get SIM cards status
@@ -758,12 +755,13 @@ router.get('/calls/analytics', async (req, res) => {
 // Get overall performance dashboard
 router.get('/performance/dashboard', async (req, res) => {
     try {
-        const [leads, campaigns, users, sims, callLogs] = await Promise.all([
+        const [leads, campaigns, users, sims, callLogs, pipelines] = await Promise.all([
             Lead.find(),
             Campaign.find(),
             User.find(),
             SimCard.find(),
-            CallLog.find()
+            CallLog.find(),
+            SalesPipeline.find()
         ]);
         
         // Calculate key metrics
@@ -771,6 +769,7 @@ router.get('/performance/dashboard', async (req, res) => {
         const totalLeads = leads.length;
         const totalCalls = callLogs.length;
         const activeSims = sims.filter(sim => sim.status === 'Active').length;
+        const totalPipelines = pipelines.length;
         
         // Lead conversion rate
         const wonLeads = leads.filter(l => l.status === 'Won').length;
@@ -780,6 +779,15 @@ router.get('/performance/dashboard', async (req, res) => {
         const successfulCalls = callLogs.filter(log => log.callStatus === 'completed').length;
         const callSuccessRate = totalCalls > 0 ? ((successfulCalls / totalCalls) * 100).toFixed(1) : 0;
         
+        // Campaign metrics
+        const activeCampaigns = campaigns.filter(c => c.status === 'Active').length;
+        const totalCampaignBudget = campaigns.reduce((sum, c) => sum + (c.budget || 0), 0);
+        const totalCampaignSpent = campaigns.reduce((sum, c) => sum + (c.metrics.cost || 0), 0);
+        
+        // Pipeline metrics
+        const activePipelines = pipelines.filter(p => p.status === 'Active').length;
+        const totalPipelineLeads = pipelines.reduce((sum, p) => sum + p.metrics.totalLeads, 0);
+        
         // Monthly growth (mock data for now)
         const monthlyGrowth = 12.5;
         
@@ -788,8 +796,14 @@ router.get('/performance/dashboard', async (req, res) => {
             totalLeads,
             totalCalls,
             activeSims,
+            totalPipelines,
             conversionRate: parseFloat(conversionRate),
             callSuccessRate: parseFloat(callSuccessRate),
+            activeCampaigns,
+            totalCampaignBudget,
+            totalCampaignSpent,
+            activePipelines,
+            totalPipelineLeads,
             monthlyGrowth
         });
     } catch (err) {
@@ -871,12 +885,13 @@ router.post('/assign-employee', AdminController.assignEmployee);
 // Get system overview statistics
 router.get('/stats/overview', async (req, res) => {
     try {
-        const [leads, campaigns, users, sims, callLogs] = await Promise.all([
+        const [leads, campaigns, users, sims, callLogs, pipelines] = await Promise.all([
             Lead.find(),
             Campaign.find(),
             User.find(),
             SimCard.find(),
-            CallLog.find()
+            CallLog.find(),
+            SalesPipeline.find()
         ]);
         
         // User statistics
@@ -915,6 +930,16 @@ router.get('/stats/overview', async (req, res) => {
             }, {})
         };
         
+        // Pipeline statistics
+        const pipelineStats = {
+            total: pipelines.length,
+            active: pipelines.filter(p => p.status === 'Active').length,
+            byStatus: pipelines.reduce((acc, pipeline) => {
+                acc[pipeline.status] = (acc[pipeline.status] || 0) + 1;
+                return acc;
+            }, {})
+        };
+        
         // SIM statistics
         const simStats = {
             total: sims.length,
@@ -938,6 +963,7 @@ router.get('/stats/overview', async (req, res) => {
             userStats,
             leadStats,
             campaignStats,
+            pipelineStats,
             simStats,
             callStats,
             lastUpdated: new Date()

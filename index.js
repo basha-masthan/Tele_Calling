@@ -42,10 +42,28 @@ app.use('/api/sales-pipelines', salesPipelineRoutes);
 const path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Error handler middleware
+// Error handler middleware (verbose in development)
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!' });
+    const isProd = process.env.NODE_ENV === 'production';
+    const safeHeaders = { ...req.headers };
+    if (safeHeaders.authorization) safeHeaders.authorization = '<redacted>';
+    const payloadPreview = typeof req.body === 'object' ? JSON.stringify(req.body).slice(0, 2000) : String(req.body).slice(0, 2000);
+    console.error('⚠️  Express Error:', {
+      method: req.method,
+      url: req.originalUrl,
+      headers: safeHeaders,
+      params: req.params,
+      query: req.query,
+      body: payloadPreview,
+      errorName: err.name,
+      errorMessage: err.message,
+      stack: err.stack
+    });
+    res.status(500).json(
+      isProd
+        ? { error: 'Server error' }
+        : { error: 'Server error', name: err.name, message: err.message, stack: err.stack }
+    );
 });
 
 // 404 handler
@@ -58,7 +76,7 @@ const PORT = process.env.PORT || 5000;
 connectDB(process.env.MONGO_URI)
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`🚀 TeleCRM Server running on port ${PORT}`);
+      console.log(`🚀 TeleCRM Server running on port http://localhost:${PORT}`);
       console.log(`📚 API Documentation available at: http://localhost:${PORT}/api-docs`);
     });
   })
@@ -66,3 +84,11 @@ connectDB(process.env.MONGO_URI)
     console.error('❌ DB connection failed', err);
     process.exit(1);
   });
+
+// Global process error logging
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('💥 Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('💥 Uncaught Exception:', err);
+});

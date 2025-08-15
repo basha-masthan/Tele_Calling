@@ -42,6 +42,376 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+/* Enhanced Assignments Section Styles */
+.assignments-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.assignments-stats .stat-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.assignments-stats .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-accent);
+}
+
+.assignments-stats .stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--info));
+}
+
+.stat-primary::before { background: linear-gradient(90deg, var(--primary), #8b5cf6); }
+.stat-success::before { background: linear-gradient(90deg, var(--success), #22c55e); }
+.stat-warning::before { background: linear-gradient(90deg, var(--warning), #f97316); }
+.stat-info::before { background: linear-gradient(90deg, var(--info), #0ea5e9); }
+
+.assignments-stats .stat-card .stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-size: 20px;
+  color: white;
+}
+
+.stat-primary .stat-icon { background: linear-gradient(135deg, var(--primary), #8b5cf6); }
+.stat-success .stat-icon { background: linear-gradient(135deg, var(--success), #22c55e); }
+.stat-warning .stat-icon { background: linear-gradient(135deg, var(--warning), #f97316); }
+.stat-info .stat-icon { background: linear-gradient(135deg, var(--info), #0ea5e9); }
+
+.assignments-stats .stat-content {
+  text-align: left;
+}
+
+.assignments-stats .stat-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.assignments-stats .stat-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.assignments-filters {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.assignments-filters .filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  align-items: end;
+}
+
+.assignments-filters .filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.assignments-filters .filter-group label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.assignments-filters .filter-group select,
+.assignments-filters .filter-group input {
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.assignments-filters .filter-group select:focus,
+.assignments-filters .filter-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.search-group {
+  position: relative;
+}
+
+.search-input-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.search-input-wrapper input {
+  padding-left: 44px;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .assignments-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .assignments-filters .filter-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .assignments-stats .stat-card {
+    padding: 20px;
+  }
+  
+  .assignments-stats .stat-number {
+    font-size: 28px;
+  }
+}
+
+/* Enhanced Table Styling */
+.assignments-table {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.assignments-table .table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.assignments-table .table-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.assignments-table .table-title i {
+  color: var(--primary);
+}
+
+.assignments-table .table-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.assignments-table .selected-count {
+  background: var(--primary);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.assignments-table .table-wrapper {
+  overflow-x: auto;
+}
+
+.assignments-table .data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+}
+
+.assignments-table .data-table th {
+  background: var(--bg-tertiary);
+  padding: 16px 20px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.assignments-table .data-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.assignments-table .data-table tbody tr:hover {
+  background: var(--bg-secondary);
+  transition: background 0.2s ease;
+}
+
+.assignments-table .checkbox-cell {
+  width: 50px;
+  text-align: center;
+}
+
+.assignments-table .data-table th input[type="checkbox"],
+.assignments-table .data-table td input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.assignments-table .data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status badge styling */
+.assignments-table .status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  min-width: 80px;
+}
+
+.assignments-table .status-new { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+.assignments-table .status-interested { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.assignments-table .status-hot { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+.assignments-table .status-follow-up { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+.assignments-table .status-won { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.assignments-table .status-lost { background: rgba(100, 116, 139, 0.1); color: var(--secondary); }
+
+/* Empty state styling */
+.assignments-table .empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.assignments-table .empty-state i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.assignments-table .empty-state h4 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+
+  .assignments-table .empty-state p {
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  /* Action buttons styling */
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  
+  .action-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+  }
+  
+  .action-btn.assign {
+    background: var(--success);
+    color: white;
+  }
+  
+  .action-btn.assign:hover {
+    background: #059669;
+    transform: scale(1.05);
+  }
+  
+  .action-btn.reassign {
+    background: var(--warning);
+    color: white;
+  }
+  
+  .action-btn.reassign:hover {
+    background: #d97706;
+    transform: scale(1.05);
+  }
+  
+  /* Loading state for assignments */
+  .assignments-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+  }
+  
+  .assignments-loading i {
+    font-size: 24px;
+    margin-bottom: 12px;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
 [data-theme="dark"] {
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
@@ -991,74 +1361,159 @@ tr:hover td {
         </div>
         <div class="card-content">
           <!-- Assignment Statistics -->
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-number" id="totalLeadsForAssignment">0</div>
-              <div class="stat-label">Total Leads</div>
+          <div class="stats-grid assignments-stats">
+            <div class="stat-card stat-primary">
+              <div class="stat-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="totalLeadsForAssignment">0</div>
+                <div class="stat-label">Total Leads</div>
+              </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-number" id="assignedLeads">0</div>
-              <div class="stat-label">Assigned Leads</div>
+            <div class="stat-card stat-success">
+              <div class="stat-icon">
+                <i class="fas fa-user-check"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="assignedLeads">0</div>
+                <div class="stat-label">Assigned Leads</div>
+              </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-number" id="unassignedLeads">0</div>
-              <div class="stat-label">Unassigned Leads</div>
+            <div class="stat-card stat-warning">
+              <div class="stat-icon">
+                <i class="fas fa-user-clock"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="unassignedLeads">0</div>
+                <div class="stat-label">Unassigned Leads</div>
+              </div>
             </div>
-            <div class="stat-card">
-              <div class="stat-number" id="totalEmployees">0</div>
-              <div class="stat-label">Available Employees</div>
+            <div class="stat-card stat-info">
+              <div class="stat-icon">
+                <i class="fas fa-user-tie"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number" id="totalEmployees">0</div>
+                <div class="stat-label">Available Employees</div>
+              </div>
             </div>
           </div>
 
           <!-- Filters -->
-          <div class="filters-section">
-            <div class="filter-group">
-              <label>Status:</label>
-              <select id="assignmentStatusFilter" onchange="filterAssignments()">
-                <option value="">All Status</option>
-                <option value="New">New</option>
-                <option value="Interested">Interested</option>
-                <option value="Hot">Hot</option>
-                <option value="Follow-up">Follow-up</option>
-                <option value="Won">Won</option>
-                <option value="Lost">Lost</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Assignment:</label>
-              <select id="assignmentFilter" onchange="filterAssignments()">
-                <option value="">All</option>
-                <option value="assigned">Assigned</option>
-                <option value="unassigned">Unassigned</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label>Search:</label>
-              <input type="text" id="assignmentSearchFilter" placeholder="Search leads..." onkeyup="filterAssignments()">
+          <div class="filters-section assignments-filters">
+            <div class="filter-row">
+              <div class="filter-group">
+                <label for="assignmentStatusFilter">Status:</label>
+                <select id="assignmentStatusFilter" onchange="filterAssignments()">
+                  <option value="">All Status</option>
+                  <option value="New">New</option>
+                  <option value="Interested">Interested</option>
+                  <option value="Hot">Hot</option>
+                  <option value="Follow-up">Follow-up</option>
+                  <option value="Won">Won</option>
+                  <option value="Lost">Lost</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="assignmentFilter">Assignment:</label>
+                <select id="assignmentFilter" onchange="filterAssignments()">
+                  <option value="">All</option>
+                  <option value="assigned">Assigned</option>
+                  <option value="unassigned">Unassigned</option>
+                </select>
+              </div>
+              <div class="filter-group search-group">
+                <label for="assignmentSearchFilter">Search:</label>
+                <div class="search-input-wrapper">
+                  <i class="fas fa-search search-icon"></i>
+                  <input type="text" id="assignmentSearchFilter" placeholder="Search leads..." onkeyup="filterAssignments()">
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- Assignments Table -->
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Phone</th>
-                  <th>Status</th>
-                  <th>State</th>
-                  <th>Assigned To</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="assignmentsTableBody">
-                <!-- Assignments will be loaded here -->
-              </tbody>
-            </table>
+          <div class="table-container assignments-table">
+            <div class="table-header">
+              <h3 class="table-title">
+                <i class="fas fa-list"></i>
+                Lead Assignments
+              </h3>
+              <div class="table-actions">
+                <span class="selected-count" id="selectedCount">0 leads selected</span>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th class="checkbox-cell">
+                      <input type="checkbox" id="assignSelectAll" />
+                    </th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>State</th>
+                    <th>Assigned To</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="assignmentsTableBody">
+                  <!-- Assignments will be loaded here -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </section>
+
+    <!-- Assignment Modal -->
+    <div id="assignModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);align-items:center;justify-content:center;z-index:2000">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-xl);width:520px;max-width:92vw">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:600">Assign Lead</div>
+          <button class="btn btn-outline" onclick="closeAssignModal()">Close</button>
+        </div>
+        <div style="padding:20px">
+          <div style="margin-bottom:12px">
+            <label>Employee</label>
+            <select id="assignEmployeeSelect" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px"></select>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button class="btn btn-primary" onclick="confirmSingleAssign()">Assign</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Assignment Modal -->
+    <div id="bulkAssignModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);align-items:center;justify-content:center;z-index:2000">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-xl);width:560px;max-width:94vw">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:600">Bulk Lead Assignment</div>
+          <button class="btn btn-outline" onclick="closeBulkAssignModal()">Close</button>
+        </div>
+        <div style="padding:20px;display:grid;gap:16px">
+          <div>
+            <div style="font-weight:600;margin-bottom:8px">Auto Distribute</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Round-robin assign selected leads across your team. If none selected, all unassigned leads will be distributed.</div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <input id="perEmployeeCount" type="number" min="0" placeholder="Per employee (0 = unlimited)" style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px" />
+              <button id="autoDistributeBtn" type="button" class="btn btn-primary" onclick="autoDistributeSelected()">Auto Distribute</button>
+            </div>
+          </div>
+          <div>
+            <div style="font-weight:600;margin-bottom:8px">Manual Assign (Selected)</div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <select id="bulkEmployeeSelect" style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px"></select>
+              <button class="btn btn-outline" onclick="manualAssignSelected()">Assign Selected</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <section id="analytics" class="section">
       <div class="card">
@@ -1159,6 +1614,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSimData();
     await loadCampaignsData();
     await loadAnalyticsData();
+    // wire buttons created in HTML
+    const adb = document.getElementById('autoDistributeBtn');
+    if (adb) adb.addEventListener('click', (e)=>{ e.preventDefault(); autoDistributeSelected(); });
+    const bs = document.querySelector('.nav-link[onclick="showSection(\'assignments\')"]');
+    if (bs) bs.addEventListener('click', ()=> setTimeout(loadAssignmentsData, 0));
     
     initializeCharts();
     // Initialize theme from localStorage or default to dark
@@ -1203,6 +1663,11 @@ function showSection(sectionId) {
         'analytics': 'Lead Analytics'
     };
     pageTitle.textContent = sectionNames[sectionId] || 'Manager Dashboard';
+
+    // Lazy load data for assignments when section is opened
+    if (sectionId === 'assignments') {
+        loadAssignmentsData();
+    }
 }
 
 async function loadDashboardData() {
@@ -1271,7 +1736,8 @@ function renderTeamTable(teamData) {
 async function loadLeadsData() {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch('/api/manager/leads', {
+        // Managers should primarily view assigned leads to their team
+        const response = await fetch('/api/manager/leads?assignedOnly=true', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -1856,21 +2322,23 @@ async function refreshData() {
 }
 
 // Assignment Management Functions
+let assignmentLeadsCache = [];
 async function loadAssignmentsData() {
     try {
         const token = localStorage.getItem('token');
-        const [leadsResponse, employeesResponse] = await Promise.all([
-            fetch('/api/manager/leads', { headers: { 'Authorization': `Bearer ${token}` } }),
-            fetch('/api/manager/employees', { headers: { 'Authorization': `Bearer ${token}` } })
+        const [leadsResponse, teamResponse] = await Promise.all([
+            fetch('/api/manager/leads?assignedOnly=true', { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch('/api/manager/team', { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
-        
-        if (leadsResponse.ok && employeesResponse.ok) {
-            const leads = await leadsResponse.json();
-            const employees = await employeesResponse.json();
-            
-            updateAssignmentStats(leads, employees);
-            renderAssignmentsTable(leads);
-        }
+
+        if (!leadsResponse.ok) return;
+        const leads = await leadsResponse.json();
+        assignmentLeadsCache = leads;
+
+        const employees = teamResponse.ok ? await teamResponse.json() : [];
+        updateAssignmentStats(leads, employees);
+        // Render with current filters applied
+        applyAssignmentFilters();
     } catch (error) {
         console.error('Error loading assignments data:', error);
     }
@@ -1905,6 +2373,7 @@ function renderAssignmentsTable(leads) {
     
     tbody.innerHTML = leads.map(lead => `
         <tr>
+            <td><input type="checkbox" class="assignChk" value="${lead._id}"></td>
             <td><strong>${lead.name}</strong></td>
             <td>${lead.phone}</td>
             <td><span class="status-badge status-${lead.status.toLowerCase().replace('-', '')}">${lead.status}</span></td>
@@ -1924,26 +2393,104 @@ function renderAssignmentsTable(leads) {
             </td>
         </tr>
     `).join('');
-}
 
-function filterAssignments() {
-    const statusFilter = document.getElementById('assignmentStatusFilter').value;
-    const assignmentFilter = document.getElementById('assignmentFilter').value;
-    const searchFilter = document.getElementById('assignmentSearchFilter').value.toLowerCase();
+    const selAll = document.getElementById('assignSelectAll');
+    if(selAll){
+      selAll.checked = false;
+      selAll.onclick = ()=>{
+        document.querySelectorAll('.assignChk').forEach(ch=> ch.checked = selAll.checked);
+        updateSelectedCount();
+      };
+    }
     
-    // This would filter the leads based on the criteria
-    // For now, we'll reload the data
-    loadAssignmentsData();
+    // Add change listeners to individual checkboxes
+    document.querySelectorAll('.assignChk').forEach(chk => {
+      chk.addEventListener('change', updateSelectedCount);
+    });
+    
+    updateSelectedCount();
 }
 
-function showAssignmentModal(leadId) {
-    // Implementation for showing assignment modal
-    alert('Assignment modal would open for lead: ' + leadId);
+function updateSelectedCount() {
+  const selectedCount = document.querySelectorAll('.assignChk:checked').length;
+  const countElement = document.getElementById('selectedCount');
+  if (countElement) {
+    countElement.textContent = `${selectedCount} lead${selectedCount !== 1 ? 's' : ''} selected`;
+  }
 }
 
-function showBulkAssignmentModal() {
-    // Implementation for showing bulk assignment modal
-    alert('Bulk assignment modal would open');
+function applyAssignmentFilters(){
+  let list = Array.isArray(assignmentLeadsCache) ? assignmentLeadsCache.slice() : [];
+  const statusFilter = (document.getElementById('assignmentStatusFilter')?.value||'');
+  const assignmentFilter = (document.getElementById('assignmentFilter')?.value||'');
+  const q = (document.getElementById('assignmentSearchFilter')?.value||'').toLowerCase();
+  if(statusFilter) list = list.filter(l=> l.status===statusFilter);
+  if(assignmentFilter==='assigned') list = list.filter(l=> !!l.assignedTo);
+  if(assignmentFilter==='unassigned') list = list.filter(l=> !l.assignedTo);
+  if(q) list = list.filter(l=> (l.name||'').toLowerCase().includes(q) || (l.phone||'').toLowerCase().includes(q) || (l.region||'').toLowerCase().includes(q));
+  renderAssignmentsTable(list);
+}
+let filterDebounce;
+function filterAssignments(){
+  clearTimeout(filterDebounce);
+  filterDebounce = setTimeout(applyAssignmentFilters, 200);
+}
+
+let currentAssignLeadId = null;
+async function showAssignmentModal(leadId) {
+    currentAssignLeadId = leadId;
+    await populateEmployeesSelect('assignEmployeeSelect');
+    const modal = document.getElementById('assignModal');
+    modal.style.display = 'flex';
+}
+function closeAssignModal(){ document.getElementById('assignModal').style.display='none'; currentAssignLeadId=null; }
+async function confirmSingleAssign(){
+  if(!currentAssignLeadId) return;
+  const empId = document.getElementById('assignEmployeeSelect').value;
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/manager/leads/assign', { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` }, body: JSON.stringify({ leadIds:[currentAssignLeadId], employeeId: empId }) });
+  if(res.ok){ closeAssignModal(); loadAssignmentsData(); loadLeadsData(); } else { const j = await res.json().catch(()=>({})); alert('Assign failed: '+(j.error||res.status)); }
+}
+
+async function showBulkAssignmentModal() {
+    await populateEmployeesSelect('bulkEmployeeSelect');
+    document.getElementById('bulkAssignModal').style.display='flex';
+}
+function closeBulkAssignModal(){ document.getElementById('bulkAssignModal').style.display='none'; }
+function getSelectedLeadIds(){ return Array.from(document.querySelectorAll('.assignChk:checked')).map(ch=>ch.value); }
+async function autoDistributeSelected(){
+  let ids = getSelectedLeadIds();
+  // If none selected, use all unassigned leads
+  // If none selected, rely on backend fallback (unassigned → all)
+  let per = parseInt(document.getElementById('perEmployeeCount')?.value||'0',10);
+  if (isNaN(per) || per < 0) per = 0;
+  if (per === 0) {
+    const promptVal = window.prompt('How many leads per employee? Enter 0 for unlimited','0');
+    const n = parseInt((promptVal||'0'),10);
+    per = isNaN(n) ? 0 : Math.max(0,n);
+    const perInput = document.getElementById('perEmployeeCount'); if (perInput) perInput.value = String(per);
+  }
+  const token = localStorage.getItem('token');
+  const body = { perEmployee: isNaN(per)?0:per };
+  if (ids.length) body.leadIds = ids;
+  const res = await fetch('/api/manager/leads/assign/auto', { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` }, body: JSON.stringify(body) });
+  if(res.ok){ closeBulkAssignModal(); loadAssignmentsData(); loadLeadsData(); } else { const j = await res.json().catch(()=>({})); alert('Auto distribute failed: '+(j.error||res.status)); }
+}
+async function manualAssignSelected(){
+  const ids = getSelectedLeadIds();
+  const empId = document.getElementById('bulkEmployeeSelect').value;
+  if(!empId){ alert('Select employee'); return; }
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/manager/leads/assign/manual-map', { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` }, body: JSON.stringify({ assignments: [{ employeeId: empId, leadIds: ids }] }) });
+  if(res.ok){ closeBulkAssignModal(); loadAssignmentsData(); loadLeadsData(); } else { const j = await res.json().catch(()=>({})); alert('Manual assign failed: '+(j.error||res.status)); }
+}
+async function populateEmployeesSelect(selectId){
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/manager/team', { headers:{ 'Authorization':`Bearer ${token}` } });
+  if(!res.ok) return;
+  const team = await res.json();
+  const sel = document.getElementById(selectId);
+  sel.innerHTML = team.map(t=>`<option value="${t._id}">${t.name}</option>`).join('');
 }
 </script>
 </body>

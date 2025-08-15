@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Admin • Analytics</title>
+	<link rel="stylesheet" href="../assets/frappe.css" />
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<style>
+		.chart-title{margin:0 0 12px;font-weight:600;font-size:16px}
+		.grid.charts{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+		.card .chart-box{height:300px}
+		@media (max-width: 768px){ .grid.charts{grid-template-columns:1fr} }
+	</style>
+</head>
+<body>
+	<div class="admin-shell">
+		<aside class="admin-sidebar">
+			<div class="brand"><h1>TeleCRM Admin</h1></div>
+			<nav>
+				<a href="/admin/overview.html">Overview</a>
+				<a href="/admin/users.html">Users</a>
+				<a href="/admin/leads.html">Leads</a>
+				<a href="/admin/campaigns.html">Campaigns</a>
+				<a href="/admin/pipelines.html">Pipelines</a>
+				<a href="/admin/sims.html">SIMs</a>
+				<a href="/admin/analytics.html" class="active">Analytics</a>
+				<a href="/admin/settings.html">Settings</a>
+			</nav>
+		</aside>
+		<main class="admin-main">
+			<div class="admin-topbar">
+				<h2 class="page-title">Lead Analytics</h2>
+				<div class="toolbar"><button class="btn" id="refresh">Refresh Analytics</button></div>
+			</div>
+			<!-- Sales Summary Metrics -->
+			<div class="grid cols-4" id="salesSummary" style="margin-bottom:16px">
+				<div class="card"><div>Total Won Deals</div><h3 id="mWon">-</h3></div>
+				<div class="card"><div>Total Sales Value</div><h3 id="mSales">-</h3></div>
+				<div class="card"><div>Top Region</div><h3 id="mTopRegion">-</h3></div>
+				<div class="card"><div>Top Sector</div><h3 id="mTopSector">-</h3></div>
+			</div>
+			<div class="grid cols-2 charts">
+				<div class="card">
+					<h3 class="chart-title">Leads by Status</h3>
+					<div class="chart-box"><canvas id="statusChart"></canvas></div>
+				</div>
+				<div class="card">
+					<h3 class="chart-title">Leads by Sector</h3>
+					<div class="chart-box"><canvas id="sectorChart"></canvas></div>
+				</div>
+				<div class="card">
+					<h3 class="chart-title">Leads by Region</h3>
+					<div class="chart-box"><canvas id="regionChart"></canvas></div>
+				</div>
+				<div class="card">
+					<h3 class="chart-title">Monthly Lead Trend</h3>
+					<div class="chart-box"><canvas id="trendChart"></canvas></div>
+				</div>
+				<div class="card">
+					<h3 class="chart-title">Sales Count by Region</h3>
+					<div class="chart-box"><canvas id="salesCountRegionChart"></canvas></div>
+				</div>
+				<div class="card">
+					<h3 class="chart-title">Sales Count by Sector</h3>
+					<div class="chart-box"><canvas id="salesCountSectorChart"></canvas></div>
+				</div>
+				<div class="card">
+					<h3 class="chart-title">Sales Value by Region</h3>
+					<div class="chart-box"><canvas id="salesValueRegionChart"></canvas></div>
+				</div>
+				<div class="card">
+					<h3 class="chart-title">Sales Value by Sector</h3>
+					<div class="chart-box"><canvas id="salesValueSectorChart"></canvas></div>
+				</div>
+			</div>
+		</main>
+	</div>
+	<script src="../assets/admin.js"></script>
+	<script>
+		Admin.navActivate('/admin/analytics.html');
+		let charts = {};
+		const fmtINR = (v)=> new Intl.NumberFormat('en-IN',{ style:'currency', currency:'INR', maximumFractionDigits:0 }).format(Number(v||0));
+		function palette(n){
+			const base=['#5E64FF','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#14b8a6','#64748b','#22c55e','#fb7185','#f97316','#0ea5e9','#a78bfa'];
+			const arr=[]; for(let i=0;i<n;i++){ arr.push(base[i%base.length]); } return arr;
+		}
+		function renderChart(id, type, labels, data){
+			const el = document.getElementById(id); if(!el) return;
+			const ctx = el.getContext('2d');
+			if(charts[id]) charts[id].destroy();
+			const colors = type==='line' ? '#5E64FF' : palette(labels.length);
+			const ds = type==='line'
+				? { label:id, data, borderColor: colors, backgroundColor:'rgba(94,100,255,.12)', tension:.4, fill:true }
+				: { label:id, data, backgroundColor: colors, borderRadius:8 };
+			charts[id] = new Chart(ctx, {
+				type,
+				data:{ labels, datasets:[ ds ] },
+				options:{ plugins:{ legend:{display:false}}, responsive:true, maintainAspectRatio:false }
+			});
+		}
+		function renderCurrencyChart(id, labels, data){
+			const el = document.getElementById(id); if(!el) return;
+			const ctx = el.getContext('2d');
+			if(charts[id]) charts[id].destroy();
+			charts[id] = new Chart(ctx, {
+				type:'bar',
+				data:{ labels, datasets:[{ label:'Amount', data, backgroundColor: palette(labels.length), borderRadius:8 }]},
+				options:{
+					plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:(ctx)=> fmtINR(ctx.parsed.y) } } },
+					responsive:true, maintainAspectRatio:false,
+					scales:{ y:{ ticks:{ callback:(val)=> fmtINR(val) } } }
+				}
+			});
+		}
+		function objToSeries(obj){ const labels = Object.keys(obj||{}); const data = labels.map(k=>obj[k]); return {labels,data}; }
+		async function load(){
+			try{
+				const [res, salesRes] = await Promise.all([
+					fetch('/api/admin/leads/analytics',{ headers: Admin.authHeaders() }),
+					fetch('/api/admin/sales/analytics',{ headers: Admin.authHeaders() })
+				]);
+				if(res.status===401||res.status===403){
+					alert('Please login as admin to view analytics');
+					window.location = '/login.html';
+					return;
+				}
+				if(!res.ok){
+					const err = await res.json().catch(()=>({}));
+					console.error('Analytics API error', err);
+					alert('Failed to load analytics');
+					return;
+				}
+				const a = await res.json();
+				const s1 = objToSeries(a.statusDistribution);
+			renderChart('statusChart','bar', s1.labels, s1.data);
+			const s2 = objToSeries(a.sectorDistribution);
+			renderChart('sectorChart','bar', s2.labels, s2.data);
+			const s3 = objToSeries(a.regionDistribution);
+			renderChart('regionChart','bar', s3.labels, s3.data);
+			const s4 = objToSeries(a.monthlyLeadTrend);
+			renderChart('trendChart','line', s4.labels, s4.data);
+
+				if(salesRes && salesRes.ok){
+					const sa = await salesRes.json();
+					// Summary metrics
+					document.getElementById('mWon').textContent = sa.totalWonDeals||0;
+					document.getElementById('mSales').textContent = fmtINR(sa.totalSalesValue||0);
+					const top = (obj)=>{
+						const entries = Object.entries(obj||{});
+						if(entries.length===0) return '-';
+						entries.sort((a,b)=> b[1]-a[1]);
+						return `${entries[0][0]} (${entries[0][1]})`;
+					};
+					document.getElementById('mTopRegion').textContent = top(sa.salesCountByRegion);
+					document.getElementById('mTopSector').textContent = top(sa.salesCountBySector);
+					// Charts
+					const cR = objToSeries(sa.salesCountByRegion);
+					renderChart('salesCountRegionChart','bar', cR.labels, cR.data);
+					const cS = objToSeries(sa.salesCountBySector);
+					renderChart('salesCountSectorChart','bar', cS.labels, cS.data);
+					const vR = objToSeries(sa.salesValueByRegion);
+					renderCurrencyChart('salesValueRegionChart', vR.labels, vR.data);
+					const vS = objToSeries(sa.salesValueBySector);
+					renderCurrencyChart('salesValueSectorChart', vS.labels, vS.data);
+				}
+			}catch(e){
+				console.error('Analytics load failed', e);
+				alert('Analytics load failed');
+			}
+		}
+		document.getElementById('refresh').addEventListener('click', load);
+		if(Admin.getToken()) load();
+	</script>
+</body>
+</html>
+
+

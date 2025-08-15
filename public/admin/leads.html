@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Admin • Leads</title>
+	<link rel="stylesheet" href="../assets/frappe.css" />
+</head>
+<body>
+	<div class="admin-shell">
+		<aside class="admin-sidebar">
+			<div class="brand"><h1>TeleCRM Admin</h1></div>
+			<nav>
+				<a href="/admin/overview.html">Overview</a>
+				<a href="/admin/users.html">Users</a>
+				<a href="/admin/leads.html" class="active">Leads</a>
+				<a href="/admin/campaigns.html">Campaigns</a>
+				<a href="/admin/pipelines.html">Pipelines</a>
+				<a href="/admin/sims.html">SIMs</a>
+				<a href="/admin/analytics.html">Analytics</a>
+				<a href="/admin/settings.html">Settings</a>
+			</nav>
+		</aside>
+		<main class="admin-main">
+			<div class="admin-topbar">
+				<h2 class="page-title">Leads</h2>
+				<div class="toolbar">
+					<input class="input" style="min-width:240px" id="q" placeholder="Search leads..." />
+					<select class="input" id="status">
+						<option value="">All Status</option>
+						<option>New</option><option>Interested</option><option>Hot</option>
+						<option>Follow-up</option><option>Won</option><option>Lost</option>
+					</select>
+					<select class="input" id="assignedFilter" title="Assigned filter">
+						<option value="">All Leads</option>
+						<option value="true">Assigned</option>
+						<option value="false">Unassigned</option>
+					</select>
+					<select class="input" id="filterManager" title="Filter by Manager" style="min-width:220px"></select>
+                    <button class="btn" id="refresh">Refresh</button>
+                    <select class="input" id="mgrSelect" title="Select Manager" style="min-width:220px"></select>
+                    <button class="btn" id="assignToManager">Assign to Manager</button>
+					<button class="btn" id="toggleCreateLead">Create Lead</button>
+					<a class="btn" id="downloadLeadTemplate" href="#">Template</a>
+					<a class="btn" id="exportLeads" href="#">Export</a>
+					<label class="btn" for="leadCsv">Import CSV</label>
+					<input type="file" id="leadCsv" accept=".csv" style="display:none" />
+				</div>
+			</div>
+			<div class="card" id="createLeadCard" style="display:none">
+				<h3 style="margin-top:0">New Lead</h3>
+				<form id="createLeadForm">
+					<div class="grid cols-3">
+						<div>
+							<label>Name</label>
+							<input class="input" id="cl_name" required />
+						</div>
+						<div>
+							<label>Phone</label>
+							<input class="input" id="cl_phone" required />
+						</div>
+						<div>
+							<label>Email</label>
+							<input class="input" id="cl_email" type="email" />
+						</div>
+						<div>
+							<label>Sector</label>
+							<select class="input" id="cl_sector">
+								<option>Technology</option><option>Healthcare</option><option>Finance</option><option>Education</option><option>Retail</option><option>Manufacturing</option><option>Real Estate</option><option>Other</option>
+							</select>
+						</div>
+						<div>
+							<label>State</label>
+							<select class="input" id="cl_region">
+								<option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option><option>Bihar</option><option>Chhattisgarh</option><option>Goa</option><option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option><option>Jharkhand</option><option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option><option>Odisha</option><option>Punjab</option><option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option><option>Delhi</option><option>Jammu and Kashmir</option><option>Ladakh</option><option>Chandigarh</option><option>Dadra and Nagar Haveli and Daman and Diu</option><option>Lakshadweep</option><option>Puducherry</option><option>Andaman and Nicobar Islands</option>
+							</select>
+						</div>
+						<div>
+							<label>Status</label>
+							<select class="input" id="cl_status">
+								<option>New</option><option>Interested</option><option>Hot</option><option>Follow-up</option><option>Won</option><option>Lost</option>
+							</select>
+						</div>
+					</div>
+					<div style="margin-top:12px">
+						<label>Notes</label>
+						<textarea class="input" id="cl_notes" rows="3"></textarea>
+					</div>
+					<div class="toolbar" style="margin-top:12px">
+						<button class="btn" type="submit">Create</button>
+						<button class="btn btn-outline" type="button" id="cl_cancel">Cancel</button>
+					</div>
+				</form>
+			</div>
+			<div class="card">
+                <table class="table" id="leadsTable">
+					<thead>
+						<tr>
+                            <th><input type="checkbox" id="selAll" /></th>
+                            <th>Name</th><th>Phone</th><th>Email</th><th>Status</th><th>Sector</th><th>State</th><th>Assigned</th><th>Created</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</main>
+	</div>
+	<script src="../assets/admin.js"></script>
+	<script>
+		Admin.navActivate('/admin/leads.html');
+		let leads=[]; let filtered=[];
+        function row(l){
+            return `<tr>
+                <td><input type="checkbox" class="selLead" data-id="${l._id}" /></td>
+                <td><strong>${l.name}</strong></td>
+				<td>${l.phone}</td>
+				<td>${l.email||'-'}</td>
+				<td><span class="badge ${badge(l.status)}">${l.status}</span></td>
+				<td>${l.sector||'-'}</td>
+				<td>${l.region||'-'}</td>
+				<td>${l.assignedTo?.name||'Unassigned'}</td>
+				<td>${Admin.fmtDate(l.createdAt)}</td>
+			</tr>`;
+		}
+		function badge(s){
+			if(s==='Hot') return 'red'; if(s==='Interested') return 'blue'; if(s==='Follow-up') return 'orange'; if(s==='Won') return 'green'; return 'blue'
+		}
+        async function load(){
+            const status = document.getElementById('status').value;
+            const assigned = document.getElementById('assignedFilter').value;
+            const managerId = document.getElementById('filterManager').value;
+            const params = new URLSearchParams();
+            if(status) params.append('status', status);
+            if(assigned) params.append('assigned', assigned);
+            if(managerId) params.append('managerId', managerId);
+            const [res, mgrRes] = await Promise.all([
+                fetch('/api/admin/leads'+(params.toString()?`?${params.toString()}`:''),{ headers: Admin.authHeaders() }),
+                fetch('/api/admin/managers',{ headers: Admin.authHeaders() })
+            ]);
+            if(res.ok){ leads = await res.json(); applyFilter(); }
+            if(mgrRes.ok){ const mgrs = await mgrRes.json();
+                document.getElementById('mgrSelect').innerHTML = '<option value="">Select Manager</option>' + mgrs.map(m=>`<option value="${m._id}">${m.name}</option>`).join('');
+                document.getElementById('filterManager').innerHTML = '<option value="">All Managers</option>' + mgrs.map(m=>`<option value="${m._id}">${m.name}</option>`).join('');
+            }
+        }
+		function applyFilter(){
+			const q = document.getElementById('q').value.toLowerCase();
+			const st = document.getElementById('status').value;
+			filtered = leads.filter(l=>{
+				const okS = !st || l.status===st;
+				const okQ = !q || l.name.toLowerCase().includes(q) || l.phone.toLowerCase().includes(q) || (l.email||'').toLowerCase().includes(q);
+				return okS && okQ;
+			});
+			document.querySelector('#leadsTable tbody').innerHTML = filtered.map(row).join('');
+		}
+        document.getElementById('q').addEventListener('input',()=>{ setTimeout(applyFilter,200) });
+        document.getElementById('status').addEventListener('change',load);
+        document.getElementById('assignedFilter').addEventListener('change',load);
+        document.getElementById('filterManager').addEventListener('change',load);
+        document.getElementById('refresh').addEventListener('click',load);
+        document.getElementById('selAll').addEventListener('change', (e)=>{
+            document.querySelectorAll('.selLead').forEach(cb=> cb.checked = e.target.checked);
+        });
+        document.getElementById('assignToManager').addEventListener('click', async ()=>{
+            const managerId = document.getElementById('mgrSelect').value;
+            const ids = Array.from(document.querySelectorAll('.selLead:checked')).map(cb=>cb.getAttribute('data-id'));
+            if(!managerId){ alert('Select a manager'); return; }
+            if(ids.length===0){ alert('Select at least one lead'); return; }
+            const res = await fetch('/api/admin/leads/assign-manager',{
+                method:'POST',
+                headers:{ 'Content-Type':'application/json', ...Admin.authHeaders() },
+                body: JSON.stringify({ managerId, leadIds: ids, clearAssignments: false })
+            });
+            if(res.ok){ alert('Assigned to manager'); load(); } else {
+                const j = await res.json().catch(()=>({})); alert('Failed: '+(j.error||res.status));
+            }
+        });
+		document.getElementById('toggleCreateLead').addEventListener('click',()=>{
+			const c = document.getElementById('createLeadCard');
+			c.style.display = c.style.display==='none' ? 'block' : 'none';
+		});
+		document.getElementById('cl_cancel').addEventListener('click',()=>{
+			document.getElementById('createLeadCard').style.display='none';
+		});
+		document.getElementById('createLeadForm').addEventListener('submit', async (e)=>{
+			e.preventDefault();
+			const payload = {
+				name: document.getElementById('cl_name').value.trim(),
+				phone: document.getElementById('cl_phone').value.trim(),
+				email: document.getElementById('cl_email').value.trim(),
+				sector: document.getElementById('cl_sector').value,
+				region: document.getElementById('cl_region').value,
+				status: document.getElementById('cl_status').value,
+				notes: document.getElementById('cl_notes').value
+			};
+			const res = await fetch('/api/admin/leads',{ method:'POST', headers: { 'Content-Type':'application/json', ...Admin.authHeaders() }, body: JSON.stringify(payload) });
+			if(res.ok){ document.getElementById('createLeadForm').reset(); document.getElementById('createLeadCard').style.display='none'; load(); } else { const j = await res.json().catch(()=>({})); alert('Create failed: '+(j.error||res.status)); }
+		});
+		document.getElementById('downloadLeadTemplate').addEventListener('click', (e)=>{
+			e.preventDefault();
+			window.location = '/api/import-export/templates/leads';
+		});
+		document.getElementById('exportLeads').addEventListener('click', (e)=>{
+			e.preventDefault();
+			window.location = '/api/import-export/leads/export';
+		});
+		document.getElementById('leadCsv').addEventListener('change', async (e)=>{
+			const f = e.target.files[0]; if(!f) return;
+			const fd = new FormData(); fd.append('file', f);
+			const res = await fetch('/api/import-export/leads/import', { method:'POST', headers: Admin.authHeaders(), body: fd });
+			if(res.ok){ alert('Leads imported'); load(); } else { const j = await res.json().catch(()=>({})); alert('Import failed: '+(j.error||res.status)); }
+			e.target.value = '';
+		});
+		if(Admin.getToken()) load();
+	</script>
+</body>
+</html>

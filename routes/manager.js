@@ -65,23 +65,47 @@ router.get('/team/performance', async (req, res) => {
 router.get('/leads', async (req, res) => {
     try {
         const managerId = req.user.id;
+        const { assignedOnly, status } = req.query;
         
         // Get all employees under this manager
         const employees = await User.find({ manager: managerId }).select('_id name');
         const employeeIds = employees.map(emp => emp._id);
         
-        // Get leads created by manager and assigned to employees under manager
-        const leads = await Lead.find({
-            $or: [
-                { createdBy: managerId },
-                { assignedTo: { $in: employeeIds } }
-            ]
-        })
+        // Build base query
+        let query = {};
+        if (assignedOnly === 'true') {
+            query = { assignedTo: { $in: employeeIds } };
+        } else {
+            query = { $or: [ { createdBy: managerId }, { assignedTo: { $in: employeeIds } } ] };
+        }
+        if (status) {
+            query.status = status;
+        }
+
+        // Get leads per query
+        const leads = await Lead.find(query)
         .select('name phone email status notes followUpDate assignedTo createdBy sellingPrice lossReason reassignmentDate createdAt sector region')
         .populate('assignedTo', 'name email')
         .populate('createdBy', 'name email')
         .sort({ createdAt: -1 });
 
+        res.json(leads);
+    } catch (err) {
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Convenience endpoint: only leads assigned to this manager's team
+router.get('/leads/assigned', async (req, res) => {
+    try {
+        const managerId = req.user.id;
+        const employees = await User.find({ manager: managerId }).select('_id name');
+        const employeeIds = employees.map(emp => emp._id);
+        const leads = await Lead.find({ assignedTo: { $in: employeeIds } })
+            .select('name phone email status notes followUpDate assignedTo createdBy sellingPrice lossReason reassignmentDate createdAt sector region')
+            .populate('assignedTo', 'name email')
+            .populate('createdBy', 'name email')
+            .sort({ createdAt: -1 });
         res.json(leads);
     } catch (err) {
         res.status(500).json({ error: 'Server error', details: err.message });
@@ -308,7 +332,6 @@ router.post('/campaigns', async (req, res) => {
 router.get('/calls/analytics', async (req, res) => {
     try {
         const employees = await User.find({ manager: req.user.id });
-        const employeeIds = employees.map(emp => emp._id);
         
         // Mock call data for team
         const callData = {
@@ -399,7 +422,7 @@ router.get('/dashboard', async (req, res) => {
 });
 
 // ===== LEAD ASSIGNMENT =====
-// Assign leads to team members
+// Assign leads to a single team member (manual simple)
 router.post('/leads/assign', async (req, res) => {
     try {
         const { leadIds, employeeId } = req.body;
@@ -417,6 +440,118 @@ router.post('/leads/assign', async (req, res) => {
         );
         
         res.json({ message: 'Leads assigned successfully' });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Auto distribute leads evenly among team (round-robin)
+router.post('/leads/assign/auto', async (req, res) => {
+    try {
+        const { leadIds, perEmployee } = req.body;
+
+        const team = await User.find({ manager: req.user.id }).select('_id');
+        if (team.length === 0) return res.status(400).json({ error: 'No team members under your management' });
+
+        let candidateLeads = [];
+        if (Array.isArray(leadIds) && leadIds.length > 0) {
+            candidateLeads = await Lead.find({ _id: { $in: leadIds } });
+        } else {
+            // fallback to all accessible unassigned leads
+            const employeeIds = team.map(t => t._id);
+            candidateLeads = await Lead.find({
+                $or: [
+                    { createdBy: req.user.id },
+                    { assignedTo: { $in: employeeIds } },
+                    { assignedTo: { $exists: false } },
+                ]
+            });
+        }
+
+        // Filter authorized leads and prefer unassigned first
+        const isAuthorized = (lead) => (
+            lead.createdBy?.toString() === req.user.id.toString() ||
+            !lead.assignedTo ||
+            team.find(t => t._id.toString() === String(lead.assignedTo))
+        );
+
+        const allowedLeads = candidateLeads.filter(isAuthorized)
+            .sort((a, b) => {
+                // unassigned first
+                const aUn = a.assignedTo ? 1 : 0;
+                const bUn = b.assignedTo ? 1 : 0;
+                if (aUn !== bUn) return aUn - bUn;
+                return new Date(a.createdAt) - new Date(b.createdAt);
+            });
+
+        if (allowedLeads.length === 0) {
+            return res.json({ message: 'No eligible leads to assign', assignedCount: 0, skippedCount: 0, assigned: [], skipped: [] });
+        }
+
+        const assigned = [];
+        const skipped = [];
+
+        const per = Number.isInteger(perEmployee) ? perEmployee : 0;
+        if (per > 0) {
+            // Assign up to perEmployee leads per team member
+            let idx = 0;
+            for (const emp of team) {
+                let count = 0;
+                while (count < per && idx < allowedLeads.length) {
+                    const lead = allowedLeads[idx++];
+                    // Skip if already assigned to same employee
+                    if (lead.assignedTo && String(lead.assignedTo) === String(emp._id)) { skipped.push(lead._id); continue; }
+                    lead.assignedTo = emp._id;
+                    await lead.save();
+                    assigned.push({ leadId: lead._id, employeeId: emp._id });
+                    count++;
+                }
+                if (idx >= allowedLeads.length) break;
+            }
+        } else {
+            // Round-robin assignment across team without cap
+            for (let i = 0; i < allowedLeads.length; i++) {
+                const lead = allowedLeads[i];
+                const employee = team[i % team.length];
+                if (lead.assignedTo && String(lead.assignedTo) === String(employee._id)) { skipped.push(lead._id); continue; }
+                lead.assignedTo = employee._id;
+                await lead.save();
+                assigned.push({ leadId: lead._id, employeeId: employee._id });
+            }
+        }
+
+        res.json({ message: 'Auto distribution complete', assignedCount: assigned.length, skippedCount: skipped.length, assigned, skipped });
+    } catch (err) {
+        res.status(500).json({ error: 'Server error', details: err.message });
+    }
+});
+
+// Manual team distribution with explicit mapping { employeeId, leadIds[] }
+router.post('/leads/assign/manual-map', async (req, res) => {
+    try {
+        const { assignments } = req.body; // [{ employeeId, leadIds: [] }]
+        if (!Array.isArray(assignments) || assignments.length === 0) {
+            return res.status(400).json({ error: 'assignments array is required' });
+        }
+        const team = await User.find({ manager: req.user.id }).select('_id');
+        const teamIds = new Set(team.map(t=> String(t._id)));
+        const results = []; let totalAssigned = 0; let totalSkipped = 0;
+        for (const a of assignments) {
+            if (!teamIds.has(String(a.employeeId))) { results.push({ employeeId: a.employeeId, error: 'Not under your management' }); continue; }
+            if (!Array.isArray(a.leadIds) || a.leadIds.length === 0) { results.push({ employeeId: a.employeeId, assigned: 0 }); continue; }
+            const leads = await Lead.find({ _id: { $in: a.leadIds } });
+            let assigned = 0; let skipped = 0;
+            for (const lead of leads) {
+                const isAuth = lead.createdBy?.toString() === req.user.id.toString() || !lead.assignedTo || teamIds.has(String(lead.assignedTo));
+                if (!isAuth) { skipped++; continue; }
+                lead.assignedTo = a.employeeId;
+                await lead.save();
+                assigned++;
+            }
+            totalAssigned += assigned; totalSkipped += skipped;
+            results.push({ employeeId: a.employeeId, assigned, skipped });
+        }
+        res.json({ message: 'Manual distribution complete', totalAssigned, totalSkipped, results });
     } catch (err) {
         res.status(500).json({ error: 'Server error', details: err.message });
     }
